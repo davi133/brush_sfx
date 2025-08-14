@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=Krita/PythonPlugin
+X-KDE-Library=brush_sfx
+X-Python-2-Compatible=false
+X-Krita-Manual=Manual.html
+Name=Brush SFX
+Comment=Sound effects for the brush.
