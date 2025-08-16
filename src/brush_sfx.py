@@ -1,6 +1,9 @@
 from krita import *
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout,  QCheckBox
-from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent, QTimer
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout,  QCheckBox, QOpenGLWidget
+from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent, QTimer, QPoint
+from PyQt5.QtGui import QCursor, QGuiApplication
+import time
+import math
 
 import numpy as np
 import sounddevice as sd
@@ -33,58 +36,63 @@ Krita.instance().addExtension(exten)
 class StrokeListener(QObject):
     def __init__(self):
         super().__init__()
-
+        
         self.__is_pressing = False
-        self.__cursor_potition = None
-        self.__previous_previuous_potition = None
-        self.__last_movement = None
-        self.__last_reading_time = None
+        self.__cursor_potition = QPoint(0, 0)
+        self.__last_cursor_position_read = QPoint(0, 0)
         self.__pressure = 1.0
 
     @property
-    def is_pressing() -> bool:
+    def is_pressing(self) -> bool:
         return self.__is_pressing
     
     @property
-    def pressure() -> float:
+    def pressure(self) -> float:
         return self.__pressure
     
     @property
-    def cursor_speed() -> float:
-        return 0.0
+    def cursor_movement(self) -> float:
+        movement = self.__last_cursor_position_read - self.__cursor_potition
+        self.__last_cursor_position_read = self.__cursor_potition
+        return movement
 
     def eventFilter(self, obj, event):
-        #pressing
-        if (event.type() == QEvent.TabletPress or \
-            event.type() == QEvent.MouseButtonPress and \
-            event.button()== Qt.LeftButton):
-            self.__is_pressing = True
-            print("pressed")
+        if obj.__class__ != QOpenGLWidget:
+            return super().eventFilter(obj, event)
 
-
-        #releasing
-        if (event.type() == QEvent.TabletRelease or \
-            event.type() == QEvent.MouseButtonRelease and \
-            event.button()== Qt.LeftButton):
-            self.__is_pressing = False
-            print("released")
-
-        #moving
         if (self.__is_pressing):
             
+            #position
             if (event.type() == QEvent.TabletMove or \
                 event.type() == QEvent.MouseMove):
-                    pass
-
+                self.__cursor_potition = event.pos()
+                    
+            #pressure
             if (event.type() == QEvent.TabletMove):
                 self.__preassure = event.pressure
-                print(event.pressure())
+                #print(event.pressure())
 
             if (event.type() == QEvent.MouseMove):
                 self.__preassure = 1.0
 
+        #pressing
+        if (event.type() == QEvent.TabletPress or \
+            event.type() == QEvent.MouseButtonPress) and \
+            event.button()== Qt.LeftButton:
+            self.__is_pressing = True
+            self.__cursor_potition = event.pos()
+            self.__last_cursor_position_read = event.pos()
+
+        #releasing
+        if (event.type() == QEvent.TabletRelease or \
+            event.type() == QEvent.MouseButtonRelease) and \
+            event.button()== Qt.LeftButton:
+            self.__is_pressing = False
+
         #print(event.type())
         return super().eventFilter(obj, event)
+
+
 
 class SoundPlayer:
     def __init__(self, input_data: StrokeListener):
@@ -93,25 +101,47 @@ class SoundPlayer:
 
         self.input_data: StrokeListener = input_data
         self.frames_processed = 0
+        self.last_callback_time = 0
+
+
+        self.max_speed = 5.0 # in screens per second
+        self.__window_height_px = QGuiApplication.instance().primaryScreen().size().height()
+        
         self.play_stream = sd.OutputStream(
             samplerate=self.pencil_sound_data.samplerate,
-            blocksize=0,
+            blocksize=2000,
             latency='low',
             channels=1,
             callback=self.callback
         )
 
+        
 
 
-    def callback(self, outdata, frames: int, time, status: sd.CallbackFlags):
-        frames_rolled = np.roll(self.pencil_sound_data.samples, shift=-self.frames_processed)
-        all_frames = frames_rolled[:frames]
+    def callback(self, outdata, frames: int, cffi_time, status: sd.CallbackFlags):
+        all_samples = self.__getSamples(frames)
+        pressing_value = 1.0 if self.input_data.is_pressing else 0.0
+       
+        deltaTime = cffi_time.currentTime- self.last_callback_time 
+        speed = self.__getSpeed(deltaTime)
+            #print(cffi_time.currentTime-self.last_callback_time)
+        
+        all_samples *= pressing_value * speed
+        outdata[:, 0] = all_samples[:]
+        self.last_callback_time = cffi_time.currentTime
+
+    def __getSamples(self, frames: int):
+        samples = np.roll(self.pencil_sound_data.samples, shift=-self.frames_processed)
         self.frames_processed += frames
-        outdata[:, 0] = all_frames
+        return samples[:frames]
+    
+    def __getSpeed(self, deltaTime):
+        movement = self.input_data.cursor_movement
+        deltaPx = math.sqrt((movement.x() ** 2) + (movement.y() ** 2))
 
-    def getFrames():
-        pass
-
+        screen_movement = deltaPx/self.__window_height_px
+        speed = screen_movement/(deltaTime*self.max_speed)
+        return speed
 
     def startPlaying(self):
         self.play_stream.start()
@@ -125,10 +155,12 @@ class BrushSFXDocker(DockWidget):
         super().__init__()
         self.mainWidget = QWidget(self)
         self.setWindowTitle("Brush SFX")
-        
+    
+
+
         self.stroke_listener = StrokeListener()
         self.player = SoundPlayer(self.stroke_listener)
-
+        self.player.startPlaying()
 
         self.main_layout = QVBoxLayout()
         self.main_layout.setContentsMargins(10, 20, 0, 0)
@@ -137,7 +169,8 @@ class BrushSFXDocker(DockWidget):
         self.__is_effect_on = False
         self.SFX_checkbox = QCheckBox("SFX", self.mainWidget)
         self.SFX_checkbox.stateChanged.connect(self.switchOnOff)
-        self.mainWidget.layout().addWidget(self.SFX_checkbox) 
+        self.SFX_checkbox.setCheckState(Qt.Checked)
+        self.mainWidget.layout().addWidget(self.SFX_checkbox)
         
 
         print("docker initialized")
