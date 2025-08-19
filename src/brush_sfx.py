@@ -9,7 +9,7 @@ import numpy as np
 import sounddevice as sd
 
 from .__init__ import src_path
-from .sound import WavObject, generate_from_file
+from .sound import WavObject, generate_from_file, clamp
 
 
 class MyExtension(Extension):
@@ -97,14 +97,15 @@ class StrokeListener(QObject):
 class SoundPlayer:
     def __init__(self, input_data: StrokeListener):
         print("loading assets")
+        #29a-pencil9i.wav
         self.pencil_sound_data = generate_from_file(f"{src_path}/../assets/29a-pencil.wav")
-
+        self.pencil_sound_data.samples =np.concatenate((self.pencil_sound_data.samples,self.pencil_sound_data.samples[::-1]))
         self.input_data: StrokeListener = input_data
         self.frames_processed = 0
         self.last_callback_time = 0
 
 
-        self.max_speed = 5.0 # in screens per second
+        self.max_speed = 5 # in screens per second
         self.__window_height_px = QGuiApplication.instance().primaryScreen().size().height()
         
         self.play_stream = sd.OutputStream(
@@ -124,7 +125,6 @@ class SoundPlayer:
        
         deltaTime = cffi_time.currentTime- self.last_callback_time 
         speed = self.__getSpeed(deltaTime)
-            #print(cffi_time.currentTime-self.last_callback_time)
         
         all_samples *= pressing_value * speed
         outdata[:, 0] = all_samples[:]
@@ -139,9 +139,11 @@ class SoundPlayer:
         movement = self.input_data.cursor_movement
         deltaPx = math.sqrt((movement.x() ** 2) + (movement.y() ** 2))
 
-        screen_movement = deltaPx/self.__window_height_px
-        speed = screen_movement/(deltaTime*self.max_speed)
-        return speed
+        speed_px = deltaPx/deltaTime
+        speed_screen = speed_px/self.__window_height_px
+        speed = speed_screen/self.max_speed
+
+        return clamp(speed, 0.0, 1.0)
 
     def startPlaying(self):
         self.play_stream.start()

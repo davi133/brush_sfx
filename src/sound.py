@@ -27,3 +27,17 @@ def generate_from_file(path):
     stream.close()
 
     return audio
+
+def smoothstep (edge0: float, edge1: float,  x: float) -> float:
+    # Scale, and clamp x to 0..1 range
+    x = clamp((x - edge0) / (edge1 - edge0))
+
+    return x * x * (3.0 - 2.0 * x)
+
+
+def clamp(x: float, lower_limit: float = 0.0, upper_limit: float = 1.0) ->float:
+    if x < lower_limit:
+        return lower_limit
+    if x > upper_limit:
+        return upper_limit
+    return x
