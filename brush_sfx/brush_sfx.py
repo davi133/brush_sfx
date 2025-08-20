@@ -8,7 +8,7 @@ import math
 import numpy as np
 import sounddevice as sd
 
-from .__init__ import src_path
+from .__init__ import dir_path
 from .sound import WavObject, generate_from_file, clamp
 
 
@@ -98,7 +98,7 @@ class SoundPlayer:
     def __init__(self, input_data: StrokeListener):
         print("loading assets")
         #29a-pencil9i.wav
-        self.pencil_sound_data = generate_from_file(f"{src_path}/../assets/29a-pencil.wav")
+        self.pencil_sound_data = generate_from_file(f"{dir_path}/assets/29a-pencil.wav")
         self.pencil_sound_data.samples =np.concatenate((self.pencil_sound_data.samples,self.pencil_sound_data.samples[::-1]))
         self.input_data: StrokeListener = input_data
         self.frames_processed = 0
