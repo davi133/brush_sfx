@@ -8,7 +8,7 @@ import math
 import numpy as np
 import sounddevice as sd
 
-from .__init__ import src_path
+from .__init__ import dir_path
 from .sound import WavObject, generate_from_file, clamp
 
 
