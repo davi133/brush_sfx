@@ -1,5 +1,5 @@
 from krita import *
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout,  QCheckBox, QOpenGLWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout,  QCheckBox, QOpenGLWidget, QSpacerItem, QSizePolicy
 from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent, QTimer, QPoint
 from PyQt5.QtGui import QCursor, QGuiApplication
 import time
@@ -8,8 +8,9 @@ import math
 import numpy as np
 import sounddevice as sd
 
-from .__init__ import src_path
-from .sound import WavObject, generate_from_file, clamp
+from .__init__ import src_path, clamp
+from .sound import WavObject, generate_from_file, generate_pen_noise
+from .filter import LowPassFilter, apply_filter, PeakFilter
 
 
 class MyExtension(Extension):
@@ -40,7 +41,7 @@ class StrokeListener(QObject):
         self.__is_pressing = False
         self.__cursor_potition = QPoint(0, 0)
         self.__last_cursor_position_read = QPoint(0, 0)
-        self.__pressure = 1.0
+        self.__pressure = 0.0
 
     @property
     def is_pressing(self) -> bool:
@@ -48,7 +49,7 @@ class StrokeListener(QObject):
     
     @property
     def pressure(self) -> float:
-        return self.__pressure
+        return self.__pressure * self.__is_pressing
     
     @property
     def cursor_movement(self) -> float:
@@ -69,11 +70,11 @@ class StrokeListener(QObject):
                     
             #pressure
             if (event.type() == QEvent.TabletMove):
-                self.__preassure = event.pressure
+                self.__pressure = event.pressure()
                 #print(event.pressure())
 
             if (event.type() == QEvent.MouseMove):
-                self.__preassure = 1.0
+                self.__pressure = 1.0
 
         #pressing
         if (event.type() == QEvent.TabletPress or \
@@ -99,56 +100,96 @@ class SoundPlayer:
         print("loading assets")
         #29a-pencil9i.wav
         self.pencil_sound_data = generate_from_file(f"{src_path}/../assets/29a-pencil.wav")
+        self.pencil_sound_data = generate_from_file(f"{src_path}/../assets/Caneta5.wav")
+        self.pencil_sound_data.samples = self.pencil_sound_data.samples[368000:395000]
         self.pencil_sound_data.samples =np.concatenate((self.pencil_sound_data.samples,self.pencil_sound_data.samples[::-1]))
+        self.pencil_sound_data = generate_pen_noise(1, 48000)
         self.input_data: StrokeListener = input_data
+        self.blocksize = 1000
+
         self.frames_processed = 0
         self.last_callback_time = 0
 
+        self.__use_lowpass = False
+        self.__filters = [LowPassFilter(2000,15000)]
+        self.__frequencies_cache = np.fft.fftfreq(self.blocksize*2, d=1/self.pencil_sound_data.samplerate)
+        self.__zero_to_one = np.concatenate((np.linspace(start=0,stop=1, num=self.blocksize//2), np.ones(self.blocksize//2)))
+        #self.__zero_to_one = np.linspace(start=0,stop=1, num=self.blocksize)
+        self.__samples_as_last_callback = np.zeros(self.blocksize)
 
-        self.max_speed = 5 # in screens per second
+
+        self.max_speed = 7 # in screens per second
         self.__window_height_px = QGuiApplication.instance().primaryScreen().size().height()
         
+        #self.__last_speed = 0
         self.play_stream = sd.OutputStream(
             samplerate=self.pencil_sound_data.samplerate,
-            blocksize=2000,
+            blocksize=self.blocksize,
             latency='low',
             channels=1,
             callback=self.callback
         )
 
-        
-
 
     def callback(self, outdata, frames: int, cffi_time, status: sd.CallbackFlags):
-        all_samples = self.__getSamples(frames)
-        pressing_value = 1.0 if self.input_data.is_pressing else 0.0
-       
-        deltaTime = cffi_time.currentTime- self.last_callback_time 
-        speed = self.__getSpeed(deltaTime)
+        all_samples = self.__getSamples(frames*2)
+        pressing_value = 1.0 if self.input_data.is_pressing else 0.0   
+        deltaTime = cffi_time.currentTime - self.last_callback_time 
         
-        all_samples *= pressing_value * speed
-        outdata[:, 0] = all_samples[:]
+        speed = self.__getSpeed(deltaTime) * self.input_data.is_pressing
+        all_samples *= speed
+        pressure = self.input_data.pressure
+        low_boost = 0
+        low_range = 0
+        _2k_boost = 0
+        _13k_boost = 0
+       
+        filters =[
+            #PeakFilter(650, 800, 820, 1420,1),  # peak at 800  >2
+            #PeakFilter(1100, 2000, 2500, 3500, 0.6), # 2k's
+            #PeakFilter(11700, 12200, 13500, 15600, 0.6), # 13k's
+        ]
+
+        filtered_samples = apply_filter(all_samples, self.pencil_sound_data.samplerate, self.__frequencies_cache, filters)
+
+
+
+        self.__mix_samples(self.__samples_as_last_callback, filtered_samples)
+
+        outdata[:, 0] = filtered_samples[:frames]
+        self.__samples_as_last_callback = all_samples[frames:]
         self.last_callback_time = cffi_time.currentTime
 
     def __getSamples(self, frames: int):
         samples = np.roll(self.pencil_sound_data.samples, shift=-self.frames_processed)
-        self.frames_processed += frames
+        self.frames_processed += frames //2
         return samples[:frames]
     
     def __getSpeed(self, deltaTime):
         movement = self.input_data.cursor_movement
         deltaPx = math.sqrt((movement.x() ** 2) + (movement.y() ** 2))
 
+        if deltaTime == 0:
+            deltaTime =1
         speed_px = deltaPx/deltaTime
         speed_screen = speed_px/self.__window_height_px
         speed = speed_screen/self.max_speed
-
+        #if self.input_data.is_pressing:
+        #    print(clamp(speed, 0.0, 1.0))
         return clamp(speed, 0.0, 1.0)
+    
+    def __mix_samples(self, A: np.ndarray, B: np.ndarray):
+        B[:self.blocksize] = (A * (1 - self.__zero_to_one)) + (B[:self.blocksize] * self.__zero_to_one)
+
 
     def startPlaying(self):
         self.play_stream.start()
     def stopPlaying(self):
         self.play_stream.stop()
+
+    def setLowpass(self, use_lowpass):
+        print("using lowpass? ", use_lowpass)
+        self.__use_lowpass = use_lowpass
 
 
 class BrushSFXDocker(DockWidget):
@@ -165,16 +206,23 @@ class BrushSFXDocker(DockWidget):
         self.player.startPlaying()
 
         self.main_layout = QVBoxLayout()
-        self.main_layout.setContentsMargins(10, 20, 0, 0)
-        self.mainWidget.setLayout(self.main_layout)
+        self.main_layout.setContentsMargins(15, 20, 0, 0)
+       
 
+        self.lowpass_checkbox = QCheckBox("lowpass", self.mainWidget)
+        self.lowpass_checkbox.stateChanged.connect(self.switchLowPass)
+        
+        
         self.__is_effect_on = False
         self.SFX_checkbox = QCheckBox("SFX", self.mainWidget)
         self.SFX_checkbox.stateChanged.connect(self.switchOnOff)
         self.SFX_checkbox.setCheckState(Qt.Checked)
-        self.mainWidget.layout().addWidget(self.SFX_checkbox)
+        #
+        self.switchOnOff(Qt.Checked)
         
-
+        self.mainWidget.setLayout(self.main_layout)
+        self.mainWidget.layout().addWidget(self.lowpass_checkbox)
+        self.mainWidget.layout().addWidget(self.SFX_checkbox)
         print("docker initialized")
 
     def canvasChanged(self, canvas):
@@ -188,9 +236,8 @@ class BrushSFXDocker(DockWidget):
             print("stop listening")
             QApplication.instance().removeEventFilter(self.stroke_listener)
 
-    def printEvents(self):
-        print(dir(QEvent))
-        
+    def switchLowPass(self, state):
+        self.player.setLowpass(state == Qt.Checked)
 
 
 Krita.instance().addDockWidgetFactory(DockWidgetFactory("brush_sfx_docker", DockWidgetFactoryBase.DockRight, BrushSFXDocker))

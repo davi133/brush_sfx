@@ -1,7 +1,9 @@
 import wave
+import random
 
 import numpy as np
 
+from .filter import apply_filter, PeakFilter
 
 class WavObject:
     def __init__(self, samplerate: int, samples: np.ndarray):
@@ -17,7 +19,7 @@ def generate_from_file(path):
 
     # Convert buffer to float32 using NumPy
     audio_as_np_int16 = np.frombuffer(samples, dtype=np.int16)
-    audio_as_np_float32 = audio_as_np_int16.astype(np.float32)[0::2]
+    audio_as_np_float32 = audio_as_np_int16.astype(np.float32)[0::stream.getnchannels()]
 
     # Normalise float32 array so that values are between -1.0 and +1.0
     max_int16 = 2 ** 15
@@ -28,16 +30,41 @@ def generate_from_file(path):
 
     return audio
 
-def smoothstep (edge0: float, edge1: float,  x: float) -> float:
-    # Scale, and clamp x to 0..1 range
-    x = clamp((x - edge0) / (edge1 - edge0))
+def generate_pen_noise(duration, frequency):
+    samples = []
+    for i in range(int(duration * frequency)):
+        noise = (random.random() * 2) - 1.0
+        samples += [noise]
+    
+    samples = np.array(samples)
+    filters_backup1 = [
+        PeakFilter(-100, 0, 25000, 38000, -0.94), #reduce everything
+        PeakFilter(-300, 570, 980, 2800, 12),#gain on lowers
+        PeakFilter(000, 100, 100, 150, 1),  # peak at 100 > 1
+        PeakFilter(650, 800, 820, 1120,4),  # peak at 800  > 4
+        PeakFilter(70, 360, 360, 460, 1.5),  # peak at 300
+        PeakFilter(2500, 3000, 3010, 3500, 0.6),
+        PeakFilter(8000, 8300, 15000, 18000, -0.9),  # reduce more
+    ]
 
-    return x * x * (3.0 - 2.0 * x)
+    filters = [
+        PeakFilter(-100, 0, 25000, 38000, -0.94), #reduce everything
+        PeakFilter(-300, 570, 980, 2800, 12),#gain on lowers
+        PeakFilter(000, 100, 100, 150, 1),  # peak at 100 > 1
+        PeakFilter(650, 800, 820, 1420,1),  # peak at 800  >2
+        PeakFilter(70, 360, 360, 460, 1.5),  # peak at 300
+        PeakFilter(2500, 3000, 3010, 3500, 0.6), 
+        PeakFilter(8000, 8300, 15000, 18000, -0.9),  # reduce more
+        
+    ]
 
+    ft_freq = np.fft.fftfreq(samples.size, d=1/frequency)
+    samples = apply_filter(samples, frequency, frequencies_cache=ft_freq, filters=filters)
 
-def clamp(x: float, lower_limit: float = 0.0, upper_limit: float = 1.0) ->float:
-    if x < lower_limit:
-        return lower_limit
-    if x > upper_limit:
-        return upper_limit
-    return x
+    max_amplitude = max(abs(samples.max()),abs(samples.min()))
+    samples = samples * (0.5/max_amplitude)
+    print("max é: ", max(abs(samples.max()),abs(samples.min())))
+
+    pencil_sound = WavObject(frequency, samples)
+
+    return pencil_sound
