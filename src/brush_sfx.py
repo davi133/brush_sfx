@@ -114,10 +114,6 @@ class SoundPlayer:
     def __init__(self, input_data: StrokeListener):
         print("loading assets")
         #29a-pencil9i.wav
-        self.pencil_sound_data = generate_from_file(f"{src_path}/../assets/29a-pencil.wav")
-        self.pencil_sound_data = generate_from_file(f"{src_path}/../assets/Caneta5.wav")
-        self.pencil_sound_data.samples = self.pencil_sound_data.samples[368000:395000]
-        self.pencil_sound_data.samples =np.concatenate((self.pencil_sound_data.samples,self.pencil_sound_data.samples[::-1]))
         self.pencil_sound_data = generate_pen_noise(1, 48000)
         self.input_data: StrokeListener = input_data
         self.blocksize = 1000
@@ -125,11 +121,8 @@ class SoundPlayer:
         self.frames_processed = 0
         self.last_callback_time = 0
 
-        self.__use_lowpass = False
-        self.__filters = [LowPassFilter(2000,15000)]
         self.__frequencies_cache = np.fft.fftfreq(self.blocksize*2, d=1/self.pencil_sound_data.samplerate)
         self.__zero_to_one = np.concatenate((np.linspace(start=0,stop=1, num=self.blocksize//2), np.ones(self.blocksize//2)))
-        #self.__zero_to_one = np.linspace(start=0,stop=1, num=self.blocksize)
         self.__samples_as_last_callback = np.zeros(self.blocksize)
 
 
@@ -164,8 +157,6 @@ class SoundPlayer:
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.pencil_sound_data.samplerate, self.__frequencies_cache, filters)
 
-        if pressure > 0: print(max(filtered_samples[:frames].max(),abs(filtered_samples[:frames].min())))
-
         self.__mix_samples(self.__samples_as_last_callback, filtered_samples)
 
         outdata[:, 0] = filtered_samples[:frames]
@@ -199,9 +190,6 @@ class SoundPlayer:
     def stopPlaying(self):
         self.play_stream.stop()
 
-    def setLowpass(self, use_lowpass):
-        print("using lowpass? ", use_lowpass)
-        self.__use_lowpass = use_lowpass
 
 
 class BrushSFXDocker(DockWidget):
@@ -249,7 +237,7 @@ class BrushSFXDocker(DockWidget):
             QApplication.instance().removeEventFilter(self.stroke_listener)
 
     def switchLowPass(self, state):
-        self.player.setLowpass(state == Qt.Checked)
+        pass
 
 
 Krita.instance().addDockWidgetFactory(DockWidgetFactory("brush_sfx_docker", DockWidgetFactoryBase.DockRight, BrushSFXDocker))
