@@ -8,7 +8,7 @@ import math
 import numpy as np
 import sounddevice as sd
 
-from .__init__ import src_path, clamp
+from .__init__ import src_path, clamp, lerp
 from .sound import WavObject, generate_from_file, generate_pen_noise
 from .filter import LowPassFilter, apply_filter, PeakFilter
 
@@ -42,6 +42,14 @@ class StrokeListener(QObject):
         self.__cursor_potition = QPoint(0, 0)
         self.__last_cursor_position_read = QPoint(0, 0)
         self.__pressure = 0.0
+        self.__is_tablet_input = False
+        self.__last_tablet_input_time = time.time()
+        
+        self.__time_for_tablet = 0.1
+        
+    @property
+    def is_tablet(self)-> bool:
+        return self.__is_tablet_input
 
     @property
     def is_pressing(self) -> bool:
@@ -60,7 +68,6 @@ class StrokeListener(QObject):
     def eventFilter(self, obj, event):
         if obj.__class__ != QOpenGLWidget:
             return super().eventFilter(obj, event)
-
         if (self.__is_pressing):
             
             #position
@@ -71,12 +78,20 @@ class StrokeListener(QObject):
             #pressure
             if (event.type() == QEvent.TabletMove):
                 self.__pressure = event.pressure()
-                #print(event.pressure())
+                self.__last_tablet_input_time = time.time()
+                self.__is_tablet_input = True
 
-            if (event.type() == QEvent.MouseMove):
+            if (event.type() == QEvent.MouseMove and time.time() >= self.__last_tablet_input_time + 0.1):
                 self.__pressure = 1.0
+                self.__is_tablet_input = False
 
         #pressing
+        #if event.type() == QEvent.TabletPress and event.button()== Qt.LeftButton:
+        #    print("tablet press")
+        #if event.type() == QEvent.MouseButtonPress and event.button()== Qt.LeftButton:
+        #    print("mouse press")
+
+
         if (event.type() == QEvent.TabletPress or \
             event.type() == QEvent.MouseButtonPress) and \
             event.button()== Qt.LeftButton:
@@ -137,27 +152,24 @@ class SoundPlayer:
         deltaTime = cffi_time.currentTime - self.last_callback_time 
         
         speed = self.__getSpeed(deltaTime) * self.input_data.is_pressing
-        all_samples *= speed
+        
         pressure = self.input_data.pressure
-        low_boost = 0
-        low_range = 0
-        _2k_boost = 0
-        _13k_boost = 0
-       
+        
         filters =[
-            #PeakFilter(650, 800, 820, 1420,1),  # peak at 800  >2
-            #PeakFilter(1100, 2000, 2500, 3500, 0.6), # 2k's
-            #PeakFilter(11700, 12200, 13500, 15600, 0.6), # 13k's
+            PeakFilter(650, 800, 820, 1420, 3 + (2*(pressure)) ),  # peak at 800  >2
+            PeakFilter(2500, 3000, 3010, 3500, 1 * ((math.cos(math.pi*pressure)+1))/2), # 3k boost
+            PeakFilter(12000, 13000, 13100, 14000, 1 * (clamp(1-2*pressure,0.0, 1.0)) ), # 13k
+            PeakFilter(3100, 3500, 24000, 25000, 1 * (clamp(1-2*pressure,0.0, 1.0)) ), # highers
         ]
-
+        all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.pencil_sound_data.samplerate, self.__frequencies_cache, filters)
 
-
+        if pressure > 0: print(max(filtered_samples[:frames].max(),abs(filtered_samples[:frames].min())))
 
         self.__mix_samples(self.__samples_as_last_callback, filtered_samples)
 
         outdata[:, 0] = filtered_samples[:frames]
-        self.__samples_as_last_callback = all_samples[frames:]
+        self.__samples_as_last_callback = filtered_samples[frames:]
         self.last_callback_time = cffi_time.currentTime
 
     def __getSamples(self, frames: int):
