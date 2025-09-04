@@ -68,7 +68,7 @@ def apply_filter(samples, samplerate, frequencies_cache, filters: List[Filter]):
     fourier_to_filter = np.fft.fft(samples)
 
     for filt in filters:
-        filt.apply(fourier_to_filter, frequencies_cache, False)
+        filt.apply(fourier_to_filter, frequencies_cache)
 
     samples_reconstruction = np.real(np.fft.ifft(fourier_to_filter))
 
