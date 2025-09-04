@@ -20,14 +20,10 @@ class LowPassFilter(Filter):
     def apply(self, fourier: np.ndarray, frequencies: np.ndarray):
         super().apply(fourier, frequencies)
         smooth =  self.cutoff - self.pass_freq
-        for i in range(fourier.size):
-            bin_frquency = abs(frequencies[i])
-            if bin_frquency > self.pass_freq:
-                distance_from_target = (self.cutoff - bin_frquency) / smooth
-                distance_smoothed = smooth_lerp(distance_from_target, 0.0, 1.0)
-                before = fourier[i]
-                after = before*distance_smoothed
-                fourier[i] = after
+        freq_abs = np.abs(frequencies)
+        distance_from_cutoff = (self.cutoff - freq_abs) / smooth
+        distance_smoothed = smooth_lerp_array(distance_from_cutoff, 0.0, 1.0)
+        fourier[:] *= distance_smoothed
 
 class HighPassFilter(Filter):
     def __init__(self, pass_freq, cutoff):
@@ -38,21 +34,11 @@ class HighPassFilter(Filter):
         super().apply(fourier, frequencies)
 
         smooth =  self.pass_freq - self.cutoff
-        for i in range(fourier.size):
-            bin_frquency = abs(frequencies[i])
-            if bin_frquency < self.pass_freq:
-                distance_from_target = (bin_frquency - self.cutoff) / smooth
-                distance_smoothed = smooth_lerp(distance_from_target, 0.0, 1.0)
-                fourier[i] *= distance_smoothed
+        freq_abs = np.abs(frequencies)
+        distance_from_cutoff = (freq_abs - self.cutoff) / smooth
+        distance_smoothed = smooth_lerp(distance_from_cutoff, 0.0, 1.0)
+        fourier[:] *= distance_smoothed
 
-class BandPassFilter(Filter):
-    def __init__(self, target_frequency, smooth):
-        self.target = target_frequency
-        self.smooth = smooth
-
-    def apply(self, fourier_transformed: np.ndarray, frequencies: np.ndarray):
-        super().apply(fourier_transformed, frequencies)
-        raise Exception("Method not implemented")
 
 class PeakFilter(Filter):
     def __init__(self, lower_target, lower_smooth, higher_smooth, higher_target, gain: float = 0.0):
@@ -73,7 +59,6 @@ class PeakFilter(Filter):
         distance_from_lower = (freq_abs - self.lower_target) / ((self.lower_smooth - self.lower_target) + 0.0001)
         distance_from_higer = (self.higher_target - freq_abs) / ((self.higher_target - self.higher_smooth) + 0.0001)
         distance_from_target = smooth_lerp_array(np.minimum(distance_from_lower, distance_from_higer), 0, 1)
-
         fourier[:] += (self.gain * fourier * distance_from_target)
         
 
