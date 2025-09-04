@@ -147,10 +147,10 @@ class SoundPlayer:
         speed = self.__getSpeed(deltaTime) * self.input_data.is_pressing
         
         pressure = self.input_data.pressure
-        
+        speed_shift = 500 * (speed) -200
         filters =[
-            PeakFilter(650, 800, 820, 1420, 3 + (2*(pressure)) ),  # peak at 800  >2
-            PeakFilter(2500, 3000, 3010, 3500, 1 * ((math.cos(math.pi*pressure)+1))/2), # 3k boost
+            PeakFilter(650+ speed_shift, 800 +speed_shift, 820+speed_shift, 1420+speed_shift, 2 + (3*(pressure)) ),  #  800
+            PeakFilter(2500, 3000, 3010, 3500, 1 * ((math.cos(math.pi*pressure)+1))/2), # 3k 
             PeakFilter(12000, 13000, 13100, 14000, 1 * (clamp(1-2*pressure,0.0, 1.0)) ), # 13k
             PeakFilter(3100, 3500, 24000, 25000, 1 * (clamp(1-2*pressure,0.0, 1.0)) ), # highers
         ]
