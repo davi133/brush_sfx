@@ -123,10 +123,11 @@ class SoundPlayer:
 
         self.__frequencies_cache = np.fft.fftfreq(self.blocksize*2, d=1/self.pencil_sound_data.samplerate)
         self.__zero_to_one = np.concatenate((np.linspace(start=0,stop=1, num=self.blocksize//2), np.ones(self.blocksize//2)))
+        self.__zero_to_one = np.linspace(start=0,stop=1, num=self.blocksize)
         self.__samples_as_last_callback = np.zeros(self.blocksize)
 
 
-        self.max_speed = 7 # in screens per second
+        self.max_speed = 10 # in screens per second
         self.__window_height_px = QGuiApplication.instance().primaryScreen().size().height()
         
         #self.__last_speed = 0
@@ -147,16 +148,17 @@ class SoundPlayer:
         speed = self.__getSpeed(deltaTime) * self.input_data.is_pressing
         
         pressure = self.input_data.pressure
-        speed_shift = 500 * (speed) -200
         filters =[
-            PeakFilter(650+ speed_shift, 800 +speed_shift, 820+speed_shift, 1420+speed_shift, 2 + (3*(pressure)) ),  #  800
-            PeakFilter(2500, 3000, 3010, 3500, 1 * ((math.cos(math.pi*pressure)+1))/2), # 3k 
-            PeakFilter(12000, 13000, 13100, 14000, 1 * (clamp(1-2*pressure,0.0, 1.0)) ), # 13k
-            PeakFilter(3100, 3500, 24000, 25000, 1 * (clamp(1-2*pressure,0.0, 1.0)) ), # highers
+            #PeakFilter(750+ speed_shift, 800 +speed_shift, 820+speed_shift, 1020+speed_shift, 4 + (4*(pressure)) ),  #  800
+            #PeakFilter(750, 800, 820, 1220, 8 + (4*pressure)),  #  800
+            #PeakFilter(2500, 3000, 3010, 3500, 1 * ((math.cos(math.pi*pressure)+1))/2), # 3k 
+            #PeakFilter(12000, 13000, 13100, 14000, 0.5 * (clamp(1-3*pressure,0.0, 1.0)) ), # 13k
+            #PeakFilter(3100, 3500, 24000, 25000, 0.5 * (clamp(1-3*pressure,0.0, 1.0)) ), # highers
         ]
+        if pressure > 0: print(pressure)
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.pencil_sound_data.samplerate, self.__frequencies_cache, filters)
-
+        #filtered_samples = all_samples
         self.__mix_samples(self.__samples_as_last_callback, filtered_samples)
 
         outdata[:, 0] = filtered_samples[:frames]

@@ -46,12 +46,11 @@ def generate_pen_noise(duration, frequency):
         PeakFilter(2500, 3000, 3010, 3500, 0.6),
         PeakFilter(8000, 8300, 15000, 18000, -0.9),  # reduce more
     ]
-
     filters = [
         PeakFilter(-100, 0, 25000, 38000, -0.94), #reduce everything
         PeakFilter(-300, 570, 980, 2800, 12),#gain on lowers
         PeakFilter(000, 100, 100, 150, 1),  # peak at 100 > 1
-        PeakFilter(650, 800, 820, 1420,1),  # peak at 800  >2
+        PeakFilter(750, 800, 820, 1420,12),  # peak at 800  >2
         PeakFilter(70, 360, 360, 460, 1.5),  # peak at 300
         PeakFilter(2500, 3000, 3010, 3500, 0.6), 
         PeakFilter(8000, 8300, 15000, 18000, -0.9),  # reduce more
