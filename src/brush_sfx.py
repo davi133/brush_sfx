@@ -95,6 +95,7 @@ class StrokeListener(QObject):
         if (event.type() == QEvent.TabletPress or \
             event.type() == QEvent.MouseButtonPress) and \
             event.button()== Qt.LeftButton:
+            print("pressing")
             self.__is_pressing = True
             self.__cursor_potition = event.pos()
             self.__last_cursor_position_read = event.pos()
@@ -155,7 +156,7 @@ class SoundPlayer:
             #PeakFilter(12000, 13000, 13100, 14000, 0.5 * (clamp(1-3*pressure,0.0, 1.0)) ), # 13k
             #PeakFilter(3100, 3500, 24000, 25000, 0.5 * (clamp(1-3*pressure,0.0, 1.0)) ), # highers
         ]
-        if pressure > 0: print(pressure)
+        if pressure > 0: print(self.frames_processed)
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.pencil_sound_data.samplerate, self.__frequencies_cache, filters)
         #filtered_samples = all_samples
@@ -186,7 +187,6 @@ class SoundPlayer:
     def __mix_samples(self, A: np.ndarray, B: np.ndarray):
         B[:self.blocksize] = (A * (1 - self.__zero_to_one)) + (B[:self.blocksize] * self.__zero_to_one)
 
-
     def startPlaying(self):
         self.play_stream.start()
     def stopPlaying(self):
@@ -199,8 +199,9 @@ class BrushSFXDocker(DockWidget):
     def __init__(self):
         super().__init__()
         self.mainWidget = QWidget(self)
+        self.setWidget(self.mainWidget)
         self.setWindowTitle("Brush SFX")
-    
+        
 
 
         self.stroke_listener = StrokeListener()
@@ -240,6 +241,11 @@ class BrushSFXDocker(DockWidget):
 
     def switchLowPass(self, state):
         pass
+    
+    def __del__(self):
+        print("closing brush sfx docker")
+        self.player.stopPlaying()
+
 
 
 Krita.instance().addDockWidgetFactory(DockWidgetFactory("brush_sfx_docker", DockWidgetFactoryBase.DockRight, BrushSFXDocker))

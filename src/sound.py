@@ -62,7 +62,7 @@ def generate_pen_noise(duration, frequency):
     samples = apply_filter(samples, frequency, frequencies_cache=ft_freq, filters=filters)
 
     max_amplitude = max(abs(samples.max()),abs(samples.min()))
-    samples = samples * (0.25/max_amplitude)
+    samples = samples * (0.55/max_amplitude)
     print("max é: ", max(abs(samples.max()),abs(samples.min())))
 
     pencil_sound = WavObject(frequency, samples)
