@@ -12,111 +12,14 @@ from .__init__ import src_path, clamp, lerp
 from .sound import WavObject, generate_from_file, generate_pen_noise
 from .filter import LowPassFilter, apply_filter, PeakFilter
 
-
-class MyExtension(Extension):
-
-    def __init__(self, parent, value):
-        super().__init__(parent)
-        self.value = value
-
-    def setup(self):
-        pass
-
-    def createActions(self, window):
-        action = window.createAction("sfcDebug", "Debug BSFX", "tools")
-        action.triggered.connect(self.printAText)
-
-    def printAText(self):
-        print(f"the value {self.value} was successfully printed")
-
-# And add the extension to Krita's list of extensions:
-exten = MyExtension(Krita.instance(),"dasdasd")
-Krita.instance().addExtension(exten)
-
-
-class StrokeListener(QObject):
-    def __init__(self):
-        super().__init__()
-        
-        self.__is_pressing = False
-        self.__cursor_potition = QPoint(0, 0)
-        self.__last_cursor_position_read = QPoint(0, 0)
-        self.__pressure = 0.0
-        self.__is_tablet_input = False
-        self.__last_tablet_input_time = time.time()
-        
-        self.__time_for_tablet = 0.1
-        
-    @property
-    def is_tablet(self)-> bool:
-        return self.__is_tablet_input
-
-    @property
-    def is_pressing(self) -> bool:
-        return self.__is_pressing
-    
-    @property
-    def pressure(self) -> float:
-        return self.__pressure * self.__is_pressing
-    
-    @property
-    def cursor_movement(self) -> float:
-        movement = self.__last_cursor_position_read - self.__cursor_potition
-        self.__last_cursor_position_read = self.__cursor_potition
-        return movement
-
-    def eventFilter(self, obj, event):
-        if obj.__class__ != QOpenGLWidget:
-            return super().eventFilter(obj, event)
-        if (self.__is_pressing):
-            
-            #position
-            if (event.type() == QEvent.TabletMove or \
-                event.type() == QEvent.MouseMove):
-                self.__cursor_potition = event.pos()
-                    
-            #pressure
-            if (event.type() == QEvent.TabletMove):
-                self.__pressure = event.pressure()
-                self.__last_tablet_input_time = time.time()
-                self.__is_tablet_input = True
-
-            if (event.type() == QEvent.MouseMove and time.time() >= self.__last_tablet_input_time + 0.1):
-                self.__pressure = 1.0
-                self.__is_tablet_input = False
-
-        #pressing
-        #if event.type() == QEvent.TabletPress and event.button()== Qt.LeftButton:
-        #    print("tablet press")
-        #if event.type() == QEvent.MouseButtonPress and event.button()== Qt.LeftButton:
-        #    print("mouse press")
-
-
-        if (event.type() == QEvent.TabletPress or \
-            event.type() == QEvent.MouseButtonPress) and \
-            event.button()== Qt.LeftButton:
-            print("pressing")
-            self.__is_pressing = True
-            self.__cursor_potition = event.pos()
-            self.__last_cursor_position_read = event.pos()
-
-        #releasing
-        if (event.type() == QEvent.TabletRelease or \
-            event.type() == QEvent.MouseButtonRelease) and \
-            event.button()== Qt.LeftButton:
-            self.__is_pressing = False
-
-        #print(event.type())
-        return super().eventFilter(obj, event)
-
-
+from .input import InputListener, input_listener
 
 class SoundPlayer:
-    def __init__(self, input_data: StrokeListener):
+    def __init__(self, input_data: InputListener):
         print("loading assets")
         #29a-pencil9i.wav
         self.pencil_sound_data = generate_pen_noise(1, 48000)
-        self.input_data: StrokeListener = input_data
+        self.input_data: InputListener = input_data
         self.blocksize = 1000
 
         self.frames_processed = 0
@@ -204,7 +107,7 @@ class BrushSFXDocker(DockWidget):
         
 
 
-        self.stroke_listener = StrokeListener()
+        self.stroke_listener = input_listener
         self.player = SoundPlayer(self.stroke_listener)
         self.player.startPlaying()
 
