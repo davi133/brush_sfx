@@ -30,6 +30,9 @@ class InputListener(QObject):
     
     @property
     def cursor_movement(self) -> float:
+        """
+        read only once per audio callback
+        """
         movement = self.__last_cursor_position_read - self.__cursor_potition
         self.__last_cursor_position_read = self.__cursor_potition
         return movement
@@ -65,11 +68,11 @@ class InputListener(QObject):
         #if event.type() == QEvent.MouseButtonPress and event.button()== Qt.LeftButton:
         #    print("mouse press")
 
+        
 
         if (event.type() == QEvent.TabletPress or \
             event.type() == QEvent.MouseButtonPress) and \
             event.button()== Qt.LeftButton:
-            print("pressing")
             self.__is_pressing = True
             self.__cursor_potition = event.pos()
             self.__last_cursor_position_read = event.pos()
@@ -78,6 +81,7 @@ class InputListener(QObject):
         if (event.type() == QEvent.TabletRelease or \
             event.type() == QEvent.MouseButtonRelease) and \
             event.button()== Qt.LeftButton:
+            self.__pressure = 0.0
             self.__is_pressing = False
 
         #print(event.type())

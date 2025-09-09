@@ -9,7 +9,8 @@ import numpy as np
 import sounddevice as sd
 
 from .__init__ import src_path, clamp, lerp
-from .sound import WavObject, generate_from_file, generate_pen_noise, sound_player
+from .sound import sound_player
+from .sound_source import WavObject, generate_from_file, generate_pen_noise
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener
 
