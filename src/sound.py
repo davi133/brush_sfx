@@ -9,7 +9,7 @@ import sounddevice as sd
 from .__init__ import clamp, lerp
 from .filter import apply_filter, PeakFilter
 from .input import InputListener, input_listener
-from .sound_source import PenSFXSource
+from .sound_source import PenSFXSource, PencilSFXSource
 
 class SoundPlayer:
     def __init__(self, input_data: InputListener):
@@ -17,6 +17,7 @@ class SoundPlayer:
         #29a-pencil9i.wav
         self.blocksize = 1000
         self.sfx_source = PenSFXSource(self.blocksize)
+        self.sfx_source = PencilSFXSource(self.blocksize)
         self.input_data: InputListener = input_data
         
 

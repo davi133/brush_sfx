@@ -4,10 +4,11 @@ from PyQt5.QtCore import QPoint
 from PyQt5.QtGui import QGuiApplication
 
 import math
+import wave
 
 import numpy as np
 
-from .__init__ import lerp, clamp
+from .__init__ import lerp, clamp, plugin_root_path
 from .filter import apply_filter, PeakFilter
 
 class WavObject:
@@ -109,6 +110,55 @@ class PenSFXSource(SFXSource):
             #PeakFilter(2500, 3000, 3010, 3500, 1 * ((math.cos(math.pi*pressure)+1))/2), # 3k 
             #PeakFilter(12000, 13000, 13100, 14000, 0.5 * (clamp(1-3*pressure,0.0, 1.0)) ), # 13k
             #PeakFilter(3100, 3500, 24000, 25000, 0.5 * (clamp(1-3*pressure,0.0, 1.0)) ), # highers
+        ]
+        all_samples *= speed *  lerp(pressure, 0.3, 1.0)
+        filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
+        self._mix_samples(self.__samples_as_last_callback, filtered_samples)
+
+        self.__samples_as_last_callback = filtered_samples[self.blocksize:]
+        self.__last_callback_time = cffi_time.currentTime
+        return filtered_samples[:self.blocksize]
+
+    def __getSamples(self):
+        samples = np.roll(self.base_sound_data.samples, shift=-self.__frames_processed)
+        self.__frames_processed += self.blocksize
+        return samples[:self.blocksize*2]
+    
+    def __getSpeed(self, deltaTime, cursor_movement):
+        deltaPx = math.sqrt((cursor_movement.x() ** 2) + (cursor_movement.y() ** 2))
+        if deltaTime == 0:
+            deltaTime =1
+        speed_px = deltaPx/deltaTime
+        speed_screen = speed_px/self.__window_height_px
+        speed = speed_screen/self.max_speed
+
+        return clamp(speed, 0.0, 1.0)
+
+class PencilSFXSource(SFXSource):
+    def __init__(self, blocksize):
+        super().__init__(blocksize)
+
+        self.base_sound_data = generate_from_file(f"{plugin_root_path}/assets/29a-pencil.wav")
+        self._set_samplerate(self.base_sound_data.samplerate)
+
+        self.__frames_processed = 0
+        self.__last_callback_time = 0
+        self.__last_cursor_position = QPoint(0, 0)
+        self.__samples_as_last_callback = np.zeros(self.blocksize)
+
+        
+        
+        self.__frequencies_cache = np.fft.fftfreq(self.blocksize*2, d=1/self.get_samplerate())
+        self.max_speed = 10 # in screens per second
+        self.__window_height_px = QGuiApplication.instance().primaryScreen().size().height()
+
+    def get_samples(self, cffi_time, cursor_movement: QPoint, pressure: float) -> np.ndarray:
+        deltaTime = cffi_time.currentTime - self.__last_callback_time 
+        all_samples = self.__getSamples()
+
+        speed =  self.__getSpeed(deltaTime, cursor_movement)
+        filters =[
+
         ]
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
