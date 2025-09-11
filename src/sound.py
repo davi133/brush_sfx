@@ -1,70 +1,48 @@
+
 import wave
 import random
+import math
 
 import numpy as np
+import sounddevice as sd
 
+from .__init__ import clamp, lerp
 from .filter import apply_filter, PeakFilter
+from .input import InputListener, input_listener
+from .sound_source import PenSFXSource, PencilSFXSource
 
-class WavObject:
-    def __init__(self, samplerate: int, samples: np.ndarray):
-        self.samplerate = samplerate
-
-        self.samples = samples
-
-def generate_from_file(path):
-    stream = wave.open(path, "rb")
-
-    samplerate = stream.getframerate()
-    samples = stream.readframes(-1)
-
-    # Convert buffer to float32 using NumPy
-    audio_as_np_int16 = np.frombuffer(samples, dtype=np.int16)
-    audio_as_np_float32 = audio_as_np_int16.astype(np.float32)[0::stream.getnchannels()]
-
-    # Normalise float32 array so that values are between -1.0 and +1.0
-    max_int16 = 2 ** 15
-    audio_normalised = audio_as_np_float32 / max_int16
-
-    audio = WavObject(samplerate, audio_normalised)
-    stream.close()
-
-    return audio
-
-def generate_pen_noise(duration, frequency):
-    samples = []
-    for i in range(int(duration * frequency)):
-        noise = (random.random() * 2) - 1.0
-        samples += [noise]
-    
-    samples = np.array(samples)
-    filters_backup1 = [
-        PeakFilter(-100, 0, 25000, 38000, -0.94), #reduce everything
-        PeakFilter(-300, 570, 980, 2800, 12),#gain on lowers
-        PeakFilter(000, 100, 100, 150, 1),  # peak at 100 > 1
-        PeakFilter(650, 800, 820, 1120,4),  # peak at 800  > 4
-        PeakFilter(70, 360, 360, 460, 1.5),  # peak at 300
-        PeakFilter(2500, 3000, 3010, 3500, 0.6),
-        PeakFilter(8000, 8300, 15000, 18000, -0.9),  # reduce more
-    ]
-    filters = [
-        PeakFilter(-100, 0, 25000, 38000, -0.94), #reduce everything
-        PeakFilter(-300, 570, 980, 2800, 12),#gain on lowers
-        PeakFilter(000, 100, 100, 150, 1),  # peak at 100 > 1
-        PeakFilter(750, 800, 820, 1420,12),  # peak at 800  >2
-        PeakFilter(70, 360, 360, 460, 1.5),  # peak at 300
-        PeakFilter(2500, 3000, 3010, 3500, 0.6), 
-        PeakFilter(8000, 8300, 15000, 18000, -0.9),  # reduce more
-
+class SoundPlayer:
+    def __init__(self, input_data: InputListener):
+        print("loading assets")
+        #29a-pencil9i.wav
+        self.blocksize = 1000
+        self.sfx_source = PenSFXSource(self.blocksize)
+        self.sfx_source = PencilSFXSource(self.blocksize)
+        self.input_data: InputListener = input_data
         
-    ]
 
-    ft_freq = np.fft.fftfreq(samples.size, d=1/frequency)
-    samples = apply_filter(samples, frequency, frequencies_cache=ft_freq, filters=filters)
+        self.play_stream = sd.OutputStream(
+            samplerate=self.sfx_source.samplerate,
+            blocksize=self.blocksize,
+            latency='low',
+            channels=1,
+            callback=self.callback
+        )
 
-    max_amplitude = max(abs(samples.max()),abs(samples.min()))
-    samples = samples * (0.55/max_amplitude)
-    print("max é: ", max(abs(samples.max()),abs(samples.min())))
 
-    pencil_sound = WavObject(frequency, samples)
+    def callback(self, outdata, frames: int, cffi_time, status: sd.CallbackFlags):
+        #print(self.input_data.cursor_position)
+        movement = self.input_data.cursor_movement
+        print(movement)
+        samples = self.sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
+        outdata[:, 0] = samples[:]
 
-    return pencil_sound
+    
+
+
+    def startPlaying(self):
+        self.play_stream.start()
+    def stopPlaying(self):
+        self.play_stream.stop()
+
+sound_player = SoundPlayer(input_listener)
