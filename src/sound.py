@@ -16,13 +16,12 @@ class SoundPlayer:
         print("loading assets")
         #29a-pencil9i.wav
         self.blocksize = 1000
-        self.sfx_source = PenSFXSource(self.blocksize)
-        self.sfx_source = PencilSFXSource(self.blocksize)
+        self.__sfx_source = PencilSFXSource(self.blocksize)
         self.input_data: InputListener = input_data
         
 
         self.play_stream = sd.OutputStream(
-            samplerate=self.sfx_source.samplerate,
+            samplerate=self.__sfx_source.samplerate,
             blocksize=self.blocksize,
             latency='low',
             channels=1,
@@ -33,11 +32,22 @@ class SoundPlayer:
     def callback(self, outdata, frames: int, cffi_time, status: sd.CallbackFlags):
         #print(self.input_data.cursor_position)
         movement = self.input_data.cursor_movement
-        print(movement)
-        samples = self.sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
+        #print(movement)
+        samples = self.__sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
         outdata[:, 0] = samples[:]
 
-    
+    def setSoundSource(self, sound_source_class):
+        print(sound_source_class)
+        self.stopPlaying()
+        self.__sfx_source = sound_source_class(self.blocksize)
+        self.play_stream = sd.OutputStream(
+            samplerate=self.__sfx_source.samplerate,
+            blocksize=self.blocksize,
+            latency='low',
+            channels=1,
+            callback=self.callback
+        )
+        self.startPlaying()
 
 
     def startPlaying(self):
