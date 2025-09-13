@@ -1,6 +1,6 @@
 from typing import List
 
-from .__init__ import clamp, smooth_lerp, smooth_lerp_array
+from .utils import clamp, smooth_lerp, smooth_lerp_array
 
 import numpy as np
 

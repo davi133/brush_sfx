@@ -8,7 +8,8 @@ import math
 import numpy as np
 import sounddevice as sd
 
-from .__init__ import src_path, clamp, lerp
+from .constants import src_path
+from .utils import clamp, lerp
 from .sound import sound_player
 from .sound_source import WavObject, generate_from_file, generate_pen_noise, PencilSFXSource, PenSFXSource
 from .filter import LowPassFilter, apply_filter, PeakFilter

@@ -8,7 +8,8 @@ import wave
 
 import numpy as np
 
-from .__init__ import lerp, clamp, plugin_root_path
+from .utils import lerp, clamp
+from .constants import plugin_root_path
 from .filter import apply_filter, PeakFilter
 
 class WavObject:
