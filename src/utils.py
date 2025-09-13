@@ -1,7 +1,4 @@
-import os
-src_path = os.path.dirname(os.path.realpath(__file__))
-plugin_root_path = src_path + "/.."
-import numpy as np
+from .dependencies import numpy as np
 
 def lerp(t: float, a: float, b: float):
     t = clamp(t, 0.0, 1.0)

@@ -3,10 +3,10 @@ import wave
 import random
 import math
 
-import numpy as np
-import sounddevice as sd
+from .dependencies import numpy as np, sounddevice as sd
+#import sounddevice as sd
 
-from .__init__ import clamp, lerp
+from .utils import clamp, lerp
 from .filter import apply_filter, PeakFilter
 from .input import InputListener, input_listener
 from .sound_source import PenSFXSource, PencilSFXSource

@@ -84,4 +84,4 @@ env.bak/
 venv.bak/
 
 *.db
-dependencies/
+dependencies*/

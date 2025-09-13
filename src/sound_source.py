@@ -6,9 +6,11 @@ from PyQt5.QtGui import QGuiApplication
 import math
 import wave
 
-import numpy as np
+from .dependencies import numpy as np
+from .dependencies import numpy_fft as np_fft
 
-from .__init__ import lerp, clamp, plugin_root_path
+from .constants import plugin_root_path
+from .utils import lerp, clamp
 from .filter import apply_filter, PeakFilter
 
 class WavObject:
@@ -49,7 +51,7 @@ def generate_pen_noise(duration, frequency):
 
         
     ]
-    ft_freq = np.fft.fftfreq(samples.size, d=1/frequency)
+    ft_freq = np_fft.fftfreq(samples.size, d=1/frequency)
     samples = apply_filter(samples, frequency, frequencies_cache=ft_freq, filters=filters)
 
     max_amplitude = max(abs(samples.max()),abs(samples.min()))
@@ -95,7 +97,7 @@ class PenSFXSource(SFXSource):
 
         
         
-        self.__frequencies_cache = np.fft.fftfreq(self.blocksize*2, d=1/self.get_samplerate())
+        self.__frequencies_cache = np_fft.fftfreq(self.blocksize*2, d=1/self.get_samplerate())
         self.max_speed = 10 # in screens per second
         self.__window_height_px = QGuiApplication.instance().primaryScreen().size().height()
 
@@ -148,7 +150,7 @@ class PencilSFXSource(SFXSource):
 
         
         
-        self.__frequencies_cache = np.fft.fftfreq(self.blocksize*2, d=1/self.get_samplerate())
+        self.__frequencies_cache = np_fft.fftfreq(self.blocksize*2, d=1/self.get_samplerate())
         self.max_speed = 10 # in screens per second
         self.__window_height_px = QGuiApplication.instance().primaryScreen().size().height()
 

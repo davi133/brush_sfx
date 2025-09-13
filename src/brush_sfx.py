@@ -4,21 +4,22 @@ from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent, QTimer, QPoint
 from PyQt5.QtGui import QCursor, QGuiApplication
 import time
 import math
+ 
 
-import numpy as np
-import sounddevice as sd
-
-from .__init__ import src_path, clamp, lerp
+from .constants import src_path
+from .utils import  clamp, lerp
 from .sound import sound_player
 from .sound_source import WavObject, generate_from_file, generate_pen_noise, PencilSFXSource, PenSFXSource
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener
 
 
+
 class BrushSFXDocker(DockWidget):
 
     def __init__(self):
         super().__init__()
+
         self.mainWidget = QWidget(self)
         self.setWidget(self.mainWidget)
         self.setWindowTitle("Brush SFX")

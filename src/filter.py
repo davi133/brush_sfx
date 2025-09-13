@@ -1,8 +1,9 @@
 from typing import List
 
-from .__init__ import clamp, smooth_lerp, smooth_lerp_array
+from .utils import clamp, smooth_lerp, smooth_lerp_array
 
-import numpy as np
+from .dependencies import numpy as np
+from .dependencies import numpy_fft as np_fft
 
 class Filter:
     def __init__(self):
@@ -65,11 +66,11 @@ class PeakFilter(Filter):
 
 def apply_filter(samples, samplerate, frequencies_cache, filters: List[Filter]):
     
-    fourier_to_filter = np.fft.fft(samples)
+    fourier_to_filter = np_fft.fft(samples)
 
     for filt in filters:
         filt.apply(fourier_to_filter, frequencies_cache)
 
-    samples_reconstruction = np.real(np.fft.ifft(fourier_to_filter))
+    samples_reconstruction = np.real(np_fft.ifft(fourier_to_filter))
 
     return samples_reconstruction
