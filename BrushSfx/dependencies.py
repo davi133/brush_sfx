@@ -31,8 +31,7 @@ def pipInstallPath():
 
 
 def enable_pip():
-    src_path = os.path.dirname(os.path.realpath(__file__))#TODO import from .constants
-    plugin_root_path = os.path.dirname(src_path + "\\..")
+    # thanks to https://gitlab.com/mellotanica/sonic_visions/-/blob/main/sonicvisions/modules.py
     
     plugin_dir = Path(__file__).parent
 
