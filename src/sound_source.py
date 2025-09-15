@@ -19,6 +19,7 @@ class WavObject:
         self.samples = samples
 
 def generate_from_file(path):
+    print("reading .wav file from ", path)
     stream = wave.open(path, "rb")
 
     samplerate = stream.getframerate()
