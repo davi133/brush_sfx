@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Service
 ServiceTypes=Krita/PythonPlugin
-X-KDE-Library=brush_sfx
+X-KDE-Library=BrushSfx
 X-Python-2-Compatible=false
 X-Krita-Manual=Manual.html
 Name=Brush SFX

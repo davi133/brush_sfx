@@ -8,7 +8,7 @@ import math
 import numpy as np
 import sounddevice as sd
 
-from .__init__ import src_path, clamp, lerp
+from .utils import clamp, lerp
 from .sound import sound_player
 from .sound_source import WavObject, generate_from_file, generate_pen_noise, PencilSFXSource, PenSFXSource
 from .filter import LowPassFilter, apply_filter, PeakFilter
@@ -59,17 +59,14 @@ class BrushSFXDocker(DockWidget):
         self.mainWidget.setLayout(self.main_layout)
         self.mainWidget.layout().addWidget(self.SFX_checkbox)
         self.mainWidget.layout().addLayout(self.choice_layout)
-        print("docker initialized")
 
     def canvasChanged(self, canvas):
         pass
 
     def switchOnOff(self, state):
         if state == Qt.Checked:
-            print("listening")
             QApplication.instance().installEventFilter(self.input_listener)
         else:
-            print("stop listening")
             QApplication.instance().removeEventFilter(self.input_listener)
 
     def switchSoundChoice(self, new_text):

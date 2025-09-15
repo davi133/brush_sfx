@@ -8,7 +8,8 @@ import wave
 
 import numpy as np
 
-from .__init__ import lerp, clamp, plugin_root_path
+from .utils import lerp, clamp
+from .constants import dir_path
 from .filter import apply_filter, PeakFilter
 
 class WavObject:
@@ -54,7 +55,6 @@ def generate_pen_noise(duration, frequency):
 
     max_amplitude = max(abs(samples.max()),abs(samples.min()))
     samples = samples * (0.55/max_amplitude)
-    print("max é: ", max(abs(samples.max()),abs(samples.min())))
 
     pencil_sound = WavObject(frequency, samples)
 
@@ -138,7 +138,7 @@ class PencilSFXSource(SFXSource):
     def __init__(self, blocksize):
         super().__init__(blocksize)
 
-        self.base_sound_data = generate_from_file(f"{plugin_root_path}/assets/29a-pencil.wav")
+        self.base_sound_data = generate_from_file(f"{dir_path}/assets/29a-pencil.wav")
         self._set_samplerate(self.base_sound_data.samplerate)
 
         self.__frames_processed = 0

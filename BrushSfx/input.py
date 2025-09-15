@@ -62,12 +62,6 @@ class InputListener(QObject):
                 self.__pressure = 1.0
                 self.__is_tablet_input = False
 
-        #pressing
-        #if event.type() == QEvent.TabletPress and event.button()== Qt.LeftButton:
-        #    print("tablet press")
-        #if event.type() == QEvent.MouseButtonPress and event.button()== Qt.LeftButton:
-        #    print("mouse press")
-
         
 
         if (event.type() == QEvent.TabletPress or \
@@ -84,7 +78,6 @@ class InputListener(QObject):
             self.__pressure = 0.0
             self.__is_pressing = False
 
-        #print(event.type())
         return super().eventFilter(obj, event)
 
 
