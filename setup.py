@@ -9,7 +9,7 @@
 #
 # It's required to have python (preferably 3.10) installed on your machine to run this script.
 #
-# To use this script use the following command on your terminal:
+# To use this script run the following command on your terminal after every change:
 # $py setup.py
 #
 # Depending on your python installation you may have to use 'python3' instead of 'py' e.g

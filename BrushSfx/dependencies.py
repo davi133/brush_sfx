@@ -95,7 +95,6 @@ def pip(param):
     sys.argv=["pip"] + param
     sys.argv.append(f'--target={pipLibPath}')
     
-    #print("pip command:", sys.argv)
     runpy.run_module("pip", run_name='__main__')
     
     sys.exit=sysExit
@@ -126,7 +125,6 @@ def checkPipLib(libNames):
                 name=libName
                 name_version=libName
             
-            print("lib: ", name_version)
 
             #continue
             try:
@@ -146,14 +144,3 @@ def checkPipLib(libNames):
 
 pipInstallPath()
 enable_pip()
-print('---------------------starting to check dependencies----------------------------------------------------')
-#print("plugin dir pedendencies.py", Path(__file__).parent.parent)
-
-#try:
-#    import numpy
-#    print("Numpy version", numpy.version.version)
-#except Exception as e:
-#    print("Can't import numpy", str(e))
-    
-
-#print('-------------------------------------------------------------------------')
