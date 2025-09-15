@@ -13,7 +13,7 @@
 # $py setup.py
 #
 # Depending on your python installation you may have to use 'python3' instead of 'py' e.g
-# $python setup.py
+# $python3 setup.py
 #
 # This script copies the contents from this repo that, will be used by the plugin, to the pykrita directory where krita can find it.
 # By doing that you can work with more than one git repository inside your pykrita directory
