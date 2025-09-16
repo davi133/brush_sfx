@@ -23,11 +23,11 @@ on the canvas widget it should play the chosen sound.
 
 - Persist changes in the plugin's options
 - Move the plugin's options UI from a docker to it's own window
-- Fine tune the pencil's noises
+- Fine tune the pencil's noise
 
 ## Known Issues
 
 - If you open a second krita window and change the options from the second window it will affect all windows. 
-Dockers are intended to have oan instance for every krita window, so it is not ideal for global options.
+Dockers are intended to have one instance for every krita window, so it is not ideal for global options.
 
 
