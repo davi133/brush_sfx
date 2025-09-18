@@ -21,7 +21,6 @@ on the canvas widget it should play the chosen sound.
 
 ## To do
 
-- Persist changes in the plugin's options
 - Move the plugin's options UI from a docker to it's own window
 - Fine tune the pencil's noise
 

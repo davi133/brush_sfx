@@ -7,6 +7,8 @@ class InputListener(QObject):
     def __init__(self):
         super().__init__()
         
+        self.__is_listening = False
+
         self.__is_pressing = False
         self.__cursor_potition = QPoint(0, 0)
         self.__last_cursor_position_read = QPoint(0, 0)
@@ -37,10 +39,15 @@ class InputListener(QObject):
         self.__last_cursor_position_read = self.__cursor_potition
         return movement
 
-    def startListening():
-        pass
-    def stopListening():
-        pass
+    def startListening(self):
+        if not self.__is_listening:
+            self.__is_listening = True
+            QApplication.instance().installEventFilter(self)
+    
+    def stopListening(self):
+        if self.__is_listening:
+            self.__is_listening = False
+            QApplication.instance().removeEventFilter(self)
 
     def eventFilter(self, obj, event):
         if obj.__class__ != QOpenGLWidget:
