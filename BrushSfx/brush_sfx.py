@@ -46,7 +46,6 @@ class BrushSFXExtension(Extension):
 
 
     def setup(self):
-        print("running setup")
         pass
 
     def createActions(self, window):
