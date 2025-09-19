@@ -104,7 +104,6 @@ class BrushPresetListener(QObject):
         self.preset_timer.start()
         
         self.__preset_name = ""
-        wind = Krita.instance().activeWindow()
     
     def detect_brush_preset(self):
         current_window =Krita.instance().activeWindow()
