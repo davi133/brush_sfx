@@ -1,7 +1,14 @@
 
+from krita import *
 from PyQt5.QtWidgets import QApplication, QOpenGLWidget
-from PyQt5.QtCore import Qt, QObject, QEvent, QPoint
+from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer
 import time
+
+#You can connect to the canvasChanged signal of the active view 
+#(Krita.instance().activeWindow().activeView().canvasChanged.connect(your_function)). 
+#This signal fires when the canvas itself changes (e.g., zoom, pan, document change), 
+#but it can also be a good trigger to re-evaluate the current brush preset or properties. 
+#Within your connected function, you can then perform the checks described in points 1 and 2.
 
 class InputListener(QObject):
     def __init__(self):
@@ -87,5 +94,33 @@ class InputListener(QObject):
 
         return super().eventFilter(obj, event)
 
+class BrushPresetListener(QObject):
+    def __init__(self):
+        super().__init__()
+        self.__checking_interval_seconds = 2
+        self.preset_timer = QTimer(self)
+        self.preset_timer.setInterval(int(1000*self.__checking_interval_seconds))
+        self.preset_timer.timeout.connect(self.detect_brush_preset)
+        self.preset_timer.start()
+        
+        self.__preset_name = ""
+        wind = Krita.instance().activeWindow()
+    
+    def detect_brush_preset(self):
+        current_window =Krita.instance().activeWindow()
+        if current_window is None:
+            return
+        current_view = current_window.activeView()
+        if current_view is None:
+            return
+        preset = current_view.currentBrushPreset()
+        if preset is None:
+            return
+        self.__preset_name = preset.name()
 
+    @property
+    def preset_name(self):
+        return self.__preset_name
+
+brush_preset_listener = BrushPresetListener()
 input_listener = InputListener()

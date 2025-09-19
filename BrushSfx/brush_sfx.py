@@ -44,6 +44,8 @@ class BrushSFXExtension(Extension):
             _sound_choice_setting = "pencil-1"
         self.switchSoundChoice(_sound_choice_setting)
 
+        self._the_window = None
+
 
     def setup(self):
         pass
@@ -51,6 +53,17 @@ class BrushSFXExtension(Extension):
     def createActions(self, window):
         action = window.createAction("sfxConfig", "Brush SFX", "tools")
         action.triggered.connect(self.openConfig)
+
+        action2 = window.createAction("sfxTest", "TestBrush", "tools")
+        action2.triggered.connect(self.test_brush)
+
+    def aaaa(self):
+        print("view changed")
+
+    def test_brush(self):
+        print("nothin to test")
+        
+
 
     def __createDialog(self):
         self.dialogWidget.setWindowFlag(Qt.WindowStaysOnTopHint)
