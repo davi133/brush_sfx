@@ -44,7 +44,10 @@ class BrushSFXExtension(Extension):
             _sound_choice_setting = "pencil-1"
         self.switchSoundChoice(_sound_choice_setting)
 
-        self._the_window = None
+        self._preset_docker_dialog = QDialog()
+        main_layout = QVBoxLayout()
+        self._preset_docker_dialog.setLayout(main_layout)
+
 
 
     def setup(self):
@@ -54,15 +57,39 @@ class BrushSFXExtension(Extension):
         action = window.createAction("sfxConfig", "Brush SFX", "tools")
         action.triggered.connect(self.openConfig)
 
-        action2 = window.createAction("sfxTest", "TestBrush", "tools")
+        action2 = window.createAction("sfxBrushPreset", "TestBrush", "tools")
         action2.triggered.connect(self.test_brush)
 
-    def aaaa(self):
-        print("view changed")
-
     def test_brush(self):
-        print("nothin to test")
+        current_window =Krita.instance().activeWindow()
+        if current_window is None:
+            return
+        current_view = current_window.activeView()
+        if current_view is None:
+            return
+        preset = current_view.currentBrushPreset()
+        if preset is None:
+            return
+        print(preset.property("id"))
+        print(preset.type())
         
+        return
+        print("nothing to test")
+        for a in dir(Krita.instance().dockers()[0]):
+            #print(a)
+            if "widget" in str(a).lower():
+                pass
+                #print("olha aqui ó==================================")
+        presets_docker = None
+        for dock in Krita.instance().dockers():
+            if dock.objectName() == "PresetDocker":
+                presets_docker = dock
+            #print(dock.objectName())
+        the_widget = None
+        for child in presets_docker.widget().children():
+            if child.objectName() == "wdgPresetChooser":
+                the_widget = child
+        self._preset_docker_dialog.layout().addWidget(the_widget)
 
 
     def __createDialog(self):

@@ -4,12 +4,6 @@ from PyQt5.QtWidgets import QApplication, QOpenGLWidget
 from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer
 import time
 
-#You can connect to the canvasChanged signal of the active view 
-#(Krita.instance().activeWindow().activeView().canvasChanged.connect(your_function)). 
-#This signal fires when the canvas itself changes (e.g., zoom, pan, document change), 
-#but it can also be a good trigger to re-evaluate the current brush preset or properties. 
-#Within your connected function, you can then perform the checks described in points 1 and 2.
-
 class InputListener(QObject):
     def __init__(self):
         super().__init__()
