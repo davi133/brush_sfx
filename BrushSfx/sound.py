@@ -14,6 +14,7 @@ from .sound_source import PenSFXSource, PencilSFXSource
 class SoundPlayer:
     def __init__(self, input_data: InputListener):
         self.blocksize = 1000
+        self.__volume = 0.0
         self.__sfx_source = PencilSFXSource(self.blocksize)
         self.input_data: InputListener = input_data
         
@@ -31,7 +32,9 @@ class SoundPlayer:
 
         movement = self.input_data.cursor_movement
         samples = self.__sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
-        outdata[:, 0] = samples[:]
+
+        exponential_volume = (math.pow(10, 3/10*self.__volume) - 1.0)
+        outdata[:, 0] = samples[:] * exponential_volume
 
     def setSoundSource(self, sound_source_class):
         self.stopPlaying()
@@ -45,6 +48,11 @@ class SoundPlayer:
         )
         self.startPlaying()
 
+    def volume(self):
+        return self.__volume
+    
+    def setVolume(self, value):
+        self.__volume = clamp(value, 0.0, 1.0)
 
     def startPlaying(self):
         self.play_stream.start()
