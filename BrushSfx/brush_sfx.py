@@ -18,7 +18,6 @@ class BrushSFXExtension(Extension):
 
     def __init__(self, parent):
         super().__init__(parent)
-        print("initializing action")
         self.setObjectName('brush_sfx_extension')
 
         self.dialogWidget = QDialog()
@@ -120,7 +119,6 @@ class BrushSFXExtension(Extension):
         self.SFX_checkbox.setCheckState(_qt_checked_state)
 
         _volume_setting = Krita.instance().readSetting("BrushSfxGroup", "volume", "50")
-        print("volume setting", _volume_setting)
         if _volume_setting.isdigit():
             _volume_setting = clamp(int(_volume_setting), 0, 100)
         else:

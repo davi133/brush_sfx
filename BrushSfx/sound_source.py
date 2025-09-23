@@ -43,18 +43,17 @@ def generate_pen_noise(duration, frequency):
         PeakFilter(-100, 0, 25000, 38000, -0.94), #reduce everything
         PeakFilter(-300, 570, 980, 2800, 12),#gain on lowers
         PeakFilter(000, 100, 100, 150, 1),  # peak at 100 > 1
-        PeakFilter(650, 700, 720, 1320,18),  # peak at 800  >2
+        PeakFilter(650, 700, 720, 1320,2),  # peak at 800  >2
         PeakFilter(70, 360, 360, 460, 1.5),  # peak at 300
         PeakFilter(2500, 3000, 3010, 3500, 0.6), 
         PeakFilter(8000, 8300, 15000, 18000, -0.9),  # reduce more
-
-        
+        PeakFilter(650, 700, 720, 1320,6), 
     ]
     ft_freq = np.fft.fftfreq(samples.size, d=1/frequency)
     samples = apply_filter(samples, frequency, frequencies_cache=ft_freq, filters=filters)
 
     max_amplitude = max(abs(samples.max()),abs(samples.min()))
-    samples = samples * (0.55/max_amplitude)
+    samples = samples * (0.45/max_amplitude)
 
     pencil_sound = WavObject(frequency, samples)
 
@@ -105,11 +104,6 @@ class PenSFXSource(SFXSource):
 
         speed =  self.__getSpeed(deltaTime, cursor_movement)
         filters =[
-            #PeakFilter(750+ speed_shift, 800 +speed_shift, 820+speed_shift, 1020+speed_shift, 4 + (4*(pressure)) ),  #  800
-            #PeakFilter(750, 800, 820, 1220, 8 + (4*pressure)),  #  800
-            #PeakFilter(2500, 3000, 3010, 3500, 1 * ((math.cos(math.pi*pressure)+1))/2), # 3k 
-            #PeakFilter(12000, 13000, 13100, 14000, 0.5 * (clamp(1-3*pressure,0.0, 1.0)) ), # 13k
-            #PeakFilter(3100, 3500, 24000, 25000, 0.5 * (clamp(1-3*pressure,0.0, 1.0)) ), # highers
         ]
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
@@ -158,7 +152,7 @@ class PencilSFXSource(SFXSource):
 
         speed =  self.__getSpeed(deltaTime, cursor_movement)
         filters =[
-
+            PeakFilter(200,300,700,1300,6 * clamp((2*pressure-1), 0, 1))
         ]
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
