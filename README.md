@@ -16,12 +16,9 @@ This plugin adds pencil and pen noise sound effect when you draw
 On krita's menu bar go to `Tools > Brush SFX`.
 The SFX option enables and disables the sound effects and it will be On by default.
 The Sound Choice option lets you choose which sound you want for your brush. Currently
-there are 2 options: pen-1(default) and pencil-1. When you press your pen or your cursor
+there are 2 options: pen(default) and pencil. When you press your pen or your cursor
 on the canvas widget it should play the chosen sound.
 
-## To do
-
-- Fine tune the pencil's noise
 
 
 

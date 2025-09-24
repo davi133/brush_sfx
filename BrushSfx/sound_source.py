@@ -40,20 +40,21 @@ def generate_from_file(path):
 def generate_pen_noise(duration, frequency):
     samples = np.random.rand(int(duration * frequency))
     filters = [
-        PeakFilter(-100, 0, 25000, 38000, -0.94), #reduce everything
+        PeakFilter(-100, 0, 25000, 38000, -0.978), #reduce everything a lot
         PeakFilter(-300, 570, 980, 2800, 12),#gain on lowers
         PeakFilter(000, 100, 100, 150, 1),  # peak at 100 > 1
-        PeakFilter(650, 700, 720, 1320,2),  # peak at 800  >2
+        #PeakFilter(650, 700, 720, 1320,2),  # peak at 800  >2
         PeakFilter(70, 360, 360, 460, 1.5),  # peak at 300
         PeakFilter(2500, 3000, 3010, 3500, 0.6), 
         PeakFilter(8000, 8300, 15000, 18000, -0.9),  # reduce more
-        PeakFilter(650, 700, 720, 1320,6), 
+        #PeakFilter(650, 700, 720, 1320, 6), 
     ]
     ft_freq = np.fft.fftfreq(samples.size, d=1/frequency)
     samples = apply_filter(samples, frequency, frequencies_cache=ft_freq, filters=filters)
 
     max_amplitude = max(abs(samples.max()),abs(samples.min()))
-    samples = samples * (0.45/max_amplitude)
+    print("max was ", max_amplitude)
+    #samples = samples * (0.45/max_amplitude)
 
     pencil_sound = WavObject(frequency, samples)
 
@@ -65,6 +66,7 @@ class SFXSource:
         self.samplerate = 48000
         
         self.__zero_to_one = np.concatenate((np.linspace(start=0,stop=1, num=self.blocksize//2), np.ones(self.blocksize//2)))
+        self.__zero_to_one = self.__zero_to_one * self.__zero_to_one * (3.0 -2.0 * self.__zero_to_one)
         
 
     def _set_samplerate(self, samplerate: float):
@@ -103,7 +105,10 @@ class PenSFXSource(SFXSource):
         all_samples = self.__getSamples()
 
         speed =  self.__getSpeed(deltaTime, cursor_movement)
+        shift_by_speed = -50 + ( 175 * (speed**2))
         filters =[
+            PeakFilter(650+shift_by_speed, 700+shift_by_speed, 720+shift_by_speed, 1320+shift_by_speed,2),
+            PeakFilter(650+shift_by_speed, 700+shift_by_speed, 720+shift_by_speed, 1320+shift_by_speed,6), #No, its not the same as using one PeakFilter with a bigger value
         ]
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
@@ -152,7 +157,7 @@ class PencilSFXSource(SFXSource):
 
         speed =  self.__getSpeed(deltaTime, cursor_movement)
         filters =[
-            PeakFilter(200,300,700,1300,6 * clamp((2*pressure-1), 0, 1))
+            PeakFilter(200,400,1000,1700,2.5 * clamp((2*pressure-1), 0, 1))
         ]
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
