@@ -89,7 +89,7 @@ class InputListener(QObject):
         return super().eventFilter(obj, event)
 
 class BrushPresetListener(QObject):
-    currentPresetChanged = pyqtSignal(str)
+    currentPresetChanged = pyqtSignal(Resource)
 
     def __init__(self):
         super().__init__()
@@ -99,7 +99,7 @@ class BrushPresetListener(QObject):
         self.preset_timer.timeout.connect(self.detect_brush_preset)
         self.preset_timer.start()
         
-        self.__preset_name = ""
+        self.__preset_filename = ""
     
     def detect_brush_preset(self):
         current_window =Krita.instance().activeWindow()
@@ -112,9 +112,9 @@ class BrushPresetListener(QObject):
         if preset is None:
             return
 
-        if preset.name() != self.__preset_name:
-            self.currentPresetChanged.emit(preset.name())
-        self.__preset_name = preset.name()
+        if preset.filename() != self.__preset_filename:
+            self.currentPresetChanged.emit(preset)
+        self.__preset_filename = preset.filename()
 
     @property
     def preset_name(self):

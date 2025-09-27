@@ -20,16 +20,18 @@ bsfx_cur = bsfx_con.cursor()
 
 class KritaResourcesHelper:
     def __init__(self):
-        pass
-    
-    def get_preset_id(self, preset_name)->int:
-        pass
+        db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'resourcecache.sqlite')
+        self.con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        self.cur = self.con.cursor()
     
     def get_tags(self)-> List[dict]:
         pass
     
-    def get_presets_in_tag(self, tag_id)->List[dict]:
+    def get_presets_in_tag(self, tag_id)->List[dict]: #{name:"name", filename:"filename"}
         pass
+    
+    def __del__(self):
+        self.con.close()
 
 kraResourceHelper = KritaResourcesHelper()
 
@@ -55,7 +57,7 @@ class BrushSfxResourceHelper:
                         );"
         stmt_preset_sfx = "CREATE TABLE IF NOT EXISTS rel_preset_sfx (\
                             id INTEGER  PRIMARY KEY, \
-                            preset_id INTEGER  NOT NULL,\
+                            preset_filename TEXT  NOT NULL,\
                             sfx_id TEXT NOT NULL,\
                             options_json TEXT,\
                             FOREIGN KEY(sfx_id) REFERENCES sfx_option(id)\
@@ -75,10 +77,13 @@ class BrushSfxResourceHelper:
     def add_sfx(self, object_yet_to_define):
         pass
     
-    def link_preset_sfx(self, preset_id: int, sfx_id: str, options: dict):
+    def link_preset_sfx(self, preset_filename: str, sfx_id: str, options: dict):
         pass
     
     def link_all_presets_in_tag(self, tag_id: int, sfx_id: str, options: dict):
         pass
+    
+    def __del__(self):
+        self.con.close()
 
 bsfxResourceHelper = BrushSfxResourceHelper()

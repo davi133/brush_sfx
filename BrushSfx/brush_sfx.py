@@ -65,11 +65,10 @@ class BrushSFXExtension(Extension):
         action2.triggered.connect(self.test_brush)
 
     def test_brush(self):
-        print("no test for now")
         brush_preset_listener.currentPresetChanged.connect(self.presetChanged)
 
-    def presetChanged(self, name):
-        print(name)
+    def presetChanged(self, resource):
+        print(resource.filename())
 
     def __createDialog(self):
         self.dialogWidget.setWindowFlag(Qt.WindowStaysOnTopHint)
