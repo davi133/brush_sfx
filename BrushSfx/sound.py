@@ -7,21 +7,21 @@ import numpy as np
 import sounddevice as sd
 
 from .utils import clamp, lerp
+from .constants import BLOCKSIZE
 from .filter import apply_filter, PeakFilter
 from .input import InputListener, input_listener
 from .sound_source import PenSFXSource, PencilSFXSource
 
 class SoundPlayer:
     def __init__(self, input_data: InputListener):
-        self.blocksize = 1000
         self.__volume = 0.0
-        self.__sfx_source = PencilSFXSource(self.blocksize)
+        self.__sfx_source = PencilSFXSource()
         self.input_data: InputListener = input_data
         
 
         self.play_stream = sd.OutputStream(
             samplerate=self.__sfx_source.samplerate,
-            blocksize=self.blocksize,
+            blocksize=BLOCKSIZE,
             latency='low',
             channels=1,
             callback=self.callback
@@ -38,10 +38,10 @@ class SoundPlayer:
 
     def setSoundSource(self, sound_source_class):
         self.stopPlaying()
-        self.__sfx_source = sound_source_class(self.blocksize)
+        self.__sfx_source = sound_source_class()
         self.play_stream = sd.OutputStream(
             samplerate=self.__sfx_source.samplerate,
-            blocksize=self.blocksize,
+            blocksize=BLOCKSIZE,
             latency='low',
             channels=1,
             callback=self.callback
