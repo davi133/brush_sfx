@@ -58,7 +58,6 @@ class SFXSource:
     def __init__(self):
         self.samplerate = 48000
         
-        self.__zero_to_one = np.concatenate((np.linspace(start=0,stop=1, num=BLOCKSIZE//2), np.ones(BLOCKSIZE//2)))
         self.__zero_to_one = np.linspace(start=0,stop=1, num=BLOCKSIZE)
         self.__zero_to_one = self.__zero_to_one * self.__zero_to_one * (3.0 -2.0 * self.__zero_to_one)
         
@@ -85,7 +84,6 @@ class PenSFXSource(SFXSource):
 
         self.__frames_processed = 0
         self.__last_callback_time = 0
-        self.__last_cursor_position = QPoint(0, 0)
         self.__samples_as_last_callback = np.zeros(BLOCKSIZE)
 
         
@@ -138,7 +136,6 @@ class PencilSFXSource(SFXSource):
 
         self.__frames_processed = 0
         self.__last_callback_time = 0
-        self.__last_cursor_position = QPoint(0, 0)
         self.__samples_as_last_callback = np.zeros(BLOCKSIZE)
 
         
@@ -171,7 +168,7 @@ class PencilSFXSource(SFXSource):
     def __getSpeed(self, deltaTime, cursor_movement):
         deltaPx = math.sqrt((cursor_movement.x() ** 2) + (cursor_movement.y() ** 2))
         if deltaTime == 0:
-            deltaTime =1
+            deltaTime = 1
         speed_px = deltaPx/deltaTime
         speed_screen = speed_px/self.__window_height_px
         speed = speed_screen/self.max_speed

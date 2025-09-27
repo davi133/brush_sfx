@@ -31,7 +31,7 @@ class BrushSFXExtension(Extension):
         }
         self.input_listener = input_listener
         self.player = sound_player
-        self.player.startPlaying()
+        #self.player.startPlaying()
         
         self.__createDialog()
 
@@ -134,9 +134,11 @@ class BrushSFXExtension(Extension):
     def switchOnOff(self, state):
         if state == Qt.Checked:
             Krita.instance().writeSetting("BrushSfxGroup", "brush_sfx_on", "True")
+            self.player.startPlaying()
             self.input_listener.startListening()
         else:
             Krita.instance().writeSetting("BrushSfxGroup", "brush_sfx_on", "False")
+            self.player.stopPlaying()
             self.input_listener.stopListening()
     
     def changeVolume(self, value: int):
