@@ -1,6 +1,5 @@
 import sys
 import os
-dir_path = os.path.dirname(os.path.realpath(__file__))
 os.environ["SD_ENABLE_ASIO"] = "1"
 from .dependencies import *
 

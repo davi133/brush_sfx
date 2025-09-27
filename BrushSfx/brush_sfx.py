@@ -1,5 +1,5 @@
 from krita import *
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QComboBox, QLabel, QDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QComboBox, QLabel, QDialog, QSlider
 from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent, QTimer, QPoint
 from PyQt5.QtGui import QCursor, QGuiApplication
 import time
@@ -10,6 +10,7 @@ import sounddevice as sd
 
 from .utils import clamp, lerp
 from .sound import sound_player
+from .constants import DEFAULT_VOLUME, DEFAULT_SOUND_CHOICE
 from .sound_source import WavObject, generate_from_file, generate_pen_noise, PencilSFXSource, PenSFXSource
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener
@@ -18,7 +19,6 @@ class BrushSFXExtension(Extension):
 
     def __init__(self, parent):
         super().__init__(parent)
-        print("initializing action")
         self.setObjectName('brush_sfx_extension')
 
         self.dialogWidget = QDialog()
@@ -26,12 +26,11 @@ class BrushSFXExtension(Extension):
         self.sound_choice_cb = None
 
         self.__sound_options = {
-            "pencil-1": PencilSFXSource,
-            "pen-1": PenSFXSource,
+            "pencil": PencilSFXSource,
+            "pen": PenSFXSource,
         }
         self.input_listener = input_listener
         self.player = sound_player
-        self.player.startPlaying()
         
         self.__createDialog()
 
@@ -39,14 +38,17 @@ class BrushSFXExtension(Extension):
         _qt_checked_state = Qt.Checked if _checked_state_setting != "False" else Qt.Unchecked
         self.switchOnOff(_qt_checked_state)
 
-        _sound_choice_setting = Krita.instance().readSetting("BrushSfxGroup", "sound_choice", "pencil-1")
+        _sound_choice_setting = Krita.instance().readSetting("BrushSfxGroup", "sound_choice", DEFAULT_SOUND_CHOICE)
         if not _sound_choice_setting in self.__sound_options:
-            _sound_choice_setting = "pencil-1"
+            _sound_choice_setting = DEFAULT_SOUND_CHOICE
         self.switchSoundChoice(_sound_choice_setting)
 
-        self._preset_docker_dialog = QDialog()
-        main_layout = QVBoxLayout()
-        self._preset_docker_dialog.setLayout(main_layout)
+        _volume_setting = Krita.instance().readSetting("BrushSfxGroup", "volume", str(DEFAULT_VOLUME))
+        if _volume_setting.isdigit():
+            _volume_setting = clamp(int(_volume_setting), 0, 100)
+        else:
+            _volume_setting = DEFAULT_VOLUME
+        self.changeVolume(int(_volume_setting))
 
 
 
@@ -61,35 +63,7 @@ class BrushSFXExtension(Extension):
         action2.triggered.connect(self.test_brush)
 
     def test_brush(self):
-        current_window =Krita.instance().activeWindow()
-        if current_window is None:
-            return
-        current_view = current_window.activeView()
-        if current_view is None:
-            return
-        preset = current_view.currentBrushPreset()
-        if preset is None:
-            return
-        print(preset.property("id"))
-        print(preset.type())
-        
-        return
-        print("nothing to test")
-        for a in dir(Krita.instance().dockers()[0]):
-            #print(a)
-            if "widget" in str(a).lower():
-                pass
-                #print("olha aqui ó==================================")
-        presets_docker = None
-        for dock in Krita.instance().dockers():
-            if dock.objectName() == "PresetDocker":
-                presets_docker = dock
-            #print(dock.objectName())
-        the_widget = None
-        for child in presets_docker.widget().children():
-            if child.objectName() == "wdgPresetChooser":
-                the_widget = child
-        self._preset_docker_dialog.layout().addWidget(the_widget)
+        print("no test for now")
 
 
     def __createDialog(self):
@@ -102,6 +76,31 @@ class BrushSFXExtension(Extension):
         # CheckBox general feature
         self.SFX_checkbox = QCheckBox("SFX", self.dialogWidget)
         self.SFX_checkbox.stateChanged.connect(self.switchOnOff)
+
+        # Volume slider
+        # label
+        volume_label = QLabel("Volume:", self.dialogWidget)
+        volume_label.setFixedWidth(43)
+        # slider
+        self.volume_slider = QSlider(self.dialogWidget)
+        self.volume_slider.setTracking(True)
+        self.volume_slider.setOrientation(Qt.Horizontal)
+        self.volume_slider.setMinimum(0)
+        self.volume_slider.setMaximum(100)
+        self.volume_slider.setTickInterval(10)
+        self.volume_slider.valueChanged.connect(self.changeVolume)
+        # value label 
+        self.volume_value_label = QLabel("100", self.dialogWidget)
+        self.volume_value_label.setFixedWidth(20)
+        # layout
+        volume_slider_layout = QHBoxLayout()
+        volume_slider_layout.addWidget(self.volume_slider)
+        volume_slider_layout.addWidget(self.volume_value_label)
+        
+
+        volume_layout = QVBoxLayout()
+        volume_layout.addWidget(volume_label)
+        volume_layout.addLayout(volume_slider_layout)
 
         # Sound Choice
         # label
@@ -119,32 +118,50 @@ class BrushSFXExtension(Extension):
 
         self.dialogWidget.setLayout(main_layout)
         self.dialogWidget.layout().addWidget(self.SFX_checkbox)
+        self.dialogWidget.layout().addLayout(volume_layout)
         self.dialogWidget.layout().addLayout(choice_layout)
     
-    def setupDialog(self):
+    def setupDialogData(self):
         _checked_state_setting = Krita.instance().readSetting("BrushSfxGroup", "brush_sfx_on", "True")
         _qt_checked_state = Qt.Checked if _checked_state_setting != "False" else Qt.Unchecked
         self.SFX_checkbox.setCheckState(_qt_checked_state)
 
-        _sound_choice_setting = Krita.instance().readSetting("BrushSfxGroup", "sound_choice", "pencil-1")
+        _volume_setting = Krita.instance().readSetting("BrushSfxGroup", "volume", str(DEFAULT_VOLUME))
+        if _volume_setting.isdigit():
+            _volume_setting = clamp(int(_volume_setting), 0, 100)
+        else:
+            _volume_setting = DEFAULT_VOLUME
+        self.volume_slider.setValue(int(_volume_setting))
+
+        _sound_choice_setting = Krita.instance().readSetting("BrushSfxGroup", "sound_choice", DEFAULT_SOUND_CHOICE)
         if not _sound_choice_setting in self.__sound_options:
-            _sound_choice_setting = "pencil-1"
+            _sound_choice_setting = DEFAULT_SOUND_CHOICE
         self.sound_choice_cb.setCurrentText(_sound_choice_setting)
 
     def switchOnOff(self, state):
         if state == Qt.Checked:
             Krita.instance().writeSetting("BrushSfxGroup", "brush_sfx_on", "True")
+            self.player.startPlaying()
             self.input_listener.startListening()
         else:
             Krita.instance().writeSetting("BrushSfxGroup", "brush_sfx_on", "False")
+            self.player.stopPlaying()
             self.input_listener.stopListening()
     
+    def changeVolume(self, value: int):
+        Krita.instance().writeSetting("BrushSfxGroup", "volume", str(value))
+        self.volume_value_label.setText(str(value))
+        volume = int(value)/100.0
+        self.player.setVolume(volume)
+
     def switchSoundChoice(self, new_text):
         Krita.instance().writeSetting("BrushSfxGroup", "sound_choice", new_text)
         self.player.setSoundSource(self.__sound_options[new_text])
+    
+    
 
     def openConfig(self):
-        self.setupDialog()
+        self.setupDialogData()
         self.dialogWidget.show()     
 
 # And add the extension to Krita's list of extensions:
