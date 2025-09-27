@@ -13,7 +13,9 @@ from .sound import sound_player
 from .constants import DEFAULT_VOLUME, DEFAULT_SOUND_CHOICE
 from .sound_source import WavObject, generate_from_file, generate_pen_noise, PencilSFXSource, PenSFXSource
 from .filter import LowPassFilter, apply_filter, PeakFilter
-from .input import InputListener, input_listener
+from .input import InputListener, input_listener, brush_preset_listener
+
+from .brush_sql import *
 
 class BrushSFXExtension(Extension):
 
@@ -64,7 +66,10 @@ class BrushSFXExtension(Extension):
 
     def test_brush(self):
         print("no test for now")
+        brush_preset_listener.currentPresetChanged.connect(self.presetChanged)
 
+    def presetChanged(self, name):
+        print(name)
 
     def __createDialog(self):
         self.dialogWidget.setWindowFlag(Qt.WindowStaysOnTopHint)

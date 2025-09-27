@@ -1,7 +1,7 @@
 
 from krita import *
 from PyQt5.QtWidgets import QApplication, QOpenGLWidget
-from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer
+from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer, pyqtSignal
 import time
 
 class InputListener(QObject):
@@ -89,6 +89,8 @@ class InputListener(QObject):
         return super().eventFilter(obj, event)
 
 class BrushPresetListener(QObject):
+    currentPresetChanged = pyqtSignal(str)
+
     def __init__(self):
         super().__init__()
         self.__checking_interval_seconds = 2
@@ -109,6 +111,9 @@ class BrushPresetListener(QObject):
         preset = current_view.currentBrushPreset()
         if preset is None:
             return
+
+        if preset.name() != self.__preset_name:
+            self.currentPresetChanged.emit(preset.name())
         self.__preset_name = preset.name()
 
     @property
