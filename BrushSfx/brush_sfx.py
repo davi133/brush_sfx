@@ -10,7 +10,7 @@ import sounddevice as sd
 
 from .utils import clamp, lerp
 from .sound import sound_player
-from .constants import DEFAULT_VOLUME
+from .constants import DEFAULT_VOLUME, DEFAULT_SOUND_CHOICE
 from .sound_source import WavObject, generate_from_file, generate_pen_noise, PencilSFXSource, PenSFXSource
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener
@@ -39,9 +39,9 @@ class BrushSFXExtension(Extension):
         _qt_checked_state = Qt.Checked if _checked_state_setting != "False" else Qt.Unchecked
         self.switchOnOff(_qt_checked_state)
 
-        _sound_choice_setting = Krita.instance().readSetting("BrushSfxGroup", "sound_choice", "pencil")
+        _sound_choice_setting = Krita.instance().readSetting("BrushSfxGroup", "sound_choice", DEFAULT_SOUND_CHOICE)
         if not _sound_choice_setting in self.__sound_options:
-            _sound_choice_setting = "pencil"
+            _sound_choice_setting = DEFAULT_SOUND_CHOICE
         self.switchSoundChoice(_sound_choice_setting)
 
         _volume_setting = Krita.instance().readSetting("BrushSfxGroup", "volume", str(DEFAULT_VOLUME))
@@ -126,9 +126,9 @@ class BrushSFXExtension(Extension):
             _volume_setting = DEFAULT_VOLUME
         self.volume_slider.setValue(int(_volume_setting))
 
-        _sound_choice_setting = Krita.instance().readSetting("BrushSfxGroup", "sound_choice", "pencil")
+        _sound_choice_setting = Krita.instance().readSetting("BrushSfxGroup", "sound_choice", DEFAULT_SOUND_CHOICE)
         if not _sound_choice_setting in self.__sound_options:
-            _sound_choice_setting = "pencil"
+            _sound_choice_setting = DEFAULT_SOUND_CHOICE
         self.sound_choice_cb.setCurrentText(_sound_choice_setting)
 
     def switchOnOff(self, state):
