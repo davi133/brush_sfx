@@ -31,7 +31,6 @@ class BrushSFXExtension(Extension):
         }
         self.input_listener = input_listener
         self.player = sound_player
-        #self.player.startPlaying()
         
         self.__createDialog()
 
