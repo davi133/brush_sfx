@@ -74,6 +74,7 @@ class BrushSfxResourceHelper:
                         );"
         try:
             self.cur.execute(stmt_version)
+            self.cur.execute("PRAGMA foreign_keys = ON;")
             self.cur.execute(f"INSERT INTO bsfx_version(version) VALUES (\'{db_version}\')")
             self.cur.execute(stmt_sfx_option)
             self.cur.execute(stmt_preset_sfx)
@@ -112,6 +113,10 @@ class BrushSfxResourceHelper:
         presets = kraResourceHelper.get_presets_with_tag(tag_id)
         params = [ (preset["filename"], sfx_id, json.dumps(options)) for preset in presets ]
         self.cur.executemany("INSERT OR REPLACE INTO rel_preset_sfx VALUES (?, ?, ?)", params)
+        self.con.commit()
+
+    def unlink_preset_sfx(self, preset_filename:str):
+        self.cur.execute("DELETE FROM rel_preset_sfx WHERE preset_filename = ?", (preset_filename, ))
         self.con.commit()
     
     def __del__(self):
