@@ -15,7 +15,7 @@ from .sound_source import WavObject, generate_from_file, generate_pen_noise, Pen
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener, brush_preset_listener
 
-from .brush_sql import *
+from .brush_sql import kraResourceHelper, bsfxResourceHelper
 
 class BrushSFXExtension(Extension):
 
@@ -65,7 +65,11 @@ class BrushSFXExtension(Extension):
         action2.triggered.connect(self.test_brush)
 
     def test_brush(self):
-        brush_preset_listener.currentPresetChanged.connect(self.presetChanged)
+        #brush_preset_listener.currentPresetChanged.connect(self.presetChanged)
+        print(bsfxResourceHelper.get_preset_sfx("saddasd"))
+        
+
+        
 
     def presetChanged(self, resource):
         print(resource.filename())
