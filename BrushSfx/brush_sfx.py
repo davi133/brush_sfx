@@ -18,6 +18,12 @@ from .input import InputListener, input_listener, brush_preset_listener
 
 from .brush_sql import kraResourceHelper, bsfxResourceHelper
  
+class PresetWidgetListener(QObject):
+    def __init__(self):
+        super().__init__()
+    def eventFilter(self, obj, event):
+        print(obj, event)
+        return super().eventFilter(obj, event)
 
 class BrushSFXExtension(Extension):
 
@@ -25,19 +31,14 @@ class BrushSFXExtension(Extension):
         super().__init__(parent)
         self.setObjectName('brush_sfx_extension')
 
-        self.dialogWidget = QDialog()
+        
         
         self.input_listener = input_listener
         self.preset_listener = brush_preset_listener
         self.preset_listener.currentPresetChanged.connect(self.onPresetChange)
         self.player = sound_player
         
-        self.__sound_options = {
-            "pencil": PencilSFXSource,
-            "pen": PenSFXSource,
-        }
-        self.__sound_options_2 = []
-        
+        self.__sound_options = []
         self.sfx_in_use = ""
         
         #general settings
@@ -48,13 +49,13 @@ class BrushSFXExtension(Extension):
         #preset settings
         self.current_preset = None
         self.is_preset_using_sfx = False
-        
         self.preset_volume = 1.0
-        self.preset_sfx_option_id = None
+        self.preset_sfx_option_id = ""
 
-        self.addSoundOption("bsfx_pencil", "pencil", PencilSFXSource)
-        self.addSoundOption("bsfx_pen", "pen", PenSFXSource)
-
+        self.addSoundOption("bsfx_pencil", "pencil", PencilSFXSource, remain_cached = True)
+        self.addSoundOption("bsfx_pen", "pen", PenSFXSource, remain_cached = True)
+        
+        self.dialogWidget = QDialog()
         self.__createDialog()
         self.__loadSettingsFromDisc()
 
@@ -71,6 +72,18 @@ class BrushSFXExtension(Extension):
 
         action2 = window.createAction("sfxBrushPreset", "TestBrush", "tools")
         action2.triggered.connect(self.test_brush)
+    
+    import inspect
+    def test_brush(self):
+        print("test brush")
+        fdock_dir = dir(Krita.instance().dockers()[0])
+        qdock = next((w for w in Krita.instance().dockers() if w.objectName() == 'PresetDocker'), None)
+        preset_dock = qdock.findChild(QWidget,'WdgPaintOpPresets')
+        a = PresetWidgetListener()
+        self.dialogWidget.installEventFilter(a)
+    
+    def preset_clicked(self, resource):
+        print("resource")
 
     def addSoundOption(self, sfx_id: str, name: str, sound_source_class, remain_cached = False):
         new_sound_option = {
@@ -81,13 +94,9 @@ class BrushSFXExtension(Extension):
             "remain_cached": remain_cached
         }
         bsfxResourceHelper.add_sfx(sfx_id, name)
-        self.__sound_options_2 += [new_sound_option]                                                                                
+        self.__sound_options += [new_sound_option]                                                                                
 
-    def test_brush(self):
-        #brush_preset_listener.currentPresetChanged.connect(self.presetChanged)
-        print("test brush")
-        print(self.__getSoundChoiceById("asdaskda"))
-        #self.general_config_widget.volume_slider.setVolume(0.69)
+
 
     def __createDialog(self):
         self.dialogWidget.setWindowFlag(Qt.WindowStaysOnTopHint)
@@ -125,7 +134,7 @@ class BrushSFXExtension(Extension):
         self.current_preset_group.layout().addWidget(self.current_preset_dispaly)
         self.current_preset_group.layout().addWidget(self.current_preset_config_widget)
         
-        # BACK TO MAIN WIDGET =====================================================================================================================================
+        # =====================================================================================================================================
         self.dialogWidget.setLayout(main_layout)
         self.dialogWidget.layout().addWidget(self.SFX_checkbox)
         self.dialogWidget.layout().addWidget(self.general_config_widget)
@@ -194,14 +203,14 @@ class BrushSFXExtension(Extension):
 
     
     def __getSoundChoiceById(self, sfx_id: str):
-        for i in range(len(self.__sound_options_2)):
-            if self.__sound_options_2[i]["sfx_id"] == sfx_id:
-                return self.__sound_options_2[i]
+        for i in range(len(self.__sound_options)):
+            if self.__sound_options[i]["sfx_id"] == sfx_id:
+                return self.__sound_options[i]
 
     def getIndexOfSoundChoice(self, sfx_id:str):
         index = -1
-        for i in range(len(self.__sound_options_2)):
-            if self.__sound_options_2[i]["sfx_id"] == sfx_id:
+        for i in range(len(self.__sound_options)):
+            if self.__sound_options[i]["sfx_id"] == sfx_id:
                 index = 1
         return index
 
@@ -214,12 +223,15 @@ class BrushSFXExtension(Extension):
             self.sfx_in_use = sfx_id_to_use
             general_sfx = self.__getSoundChoiceById(self.sfx_in_use)
             if general_sfx is not None:
-                if general_sfx["remain_cached"] and general_sfx["sound_sorce_cache"] is None:
-                    print("creating cache")
-                    general_sfx["sound_sorce_cache"] = sound_source_class()
-                self.player.setSoundSource(general_sfx["sound_source_class"])
+                if general_sfx["remain_cached"]:
+                    if general_sfx["sound_sorce_cache"] is None:
+                        print("creating cache")
+                        general_sfx["sound_sorce_cache"] = general_sfx["sound_source_class"]()
+                    self.player.setSoundSource(general_sfx["sound_sorce_cache"])
+                else:
+                    self.player.setSoundSource(general_sfx["sound_source_class"]())
     # PRESET ________________________________________________________________________
-
+ 
     def onPresetChange(self, preset):
         if preset is None:
             self.current_preset = None
@@ -286,7 +298,7 @@ class BrushSFXExtension(Extension):
         self.SFX_checkbox.setChecked(Qt.Checked if self.is_sfx_on else Qt.Unchecked)
         self.general_config_widget.blockSignals(True)
         self.general_config_widget.soundOptionChanged.disconnect(self.changeGeneralSoundChoice)
-        self.general_config_widget.setOptionsData(self.__sound_options_2)
+        self.general_config_widget.setOptionsData(self.__sound_options)
         self.general_config_widget.setVolume(self.general_volume)
         self.general_config_widget.setSfxOption(self.general_sfx_option_id)
         self.general_config_widget.soundOptionChanged.connect(self.changeGeneralSoundChoice)
@@ -300,15 +312,13 @@ class BrushSFXExtension(Extension):
         self.current_preset_group.blockSignals(False)
 
         self.current_preset_config_widget.blockSignals(True)
-        self.current_preset_config_widget.setOptionsData(self.__sound_options_2)
+        self.current_preset_config_widget.setOptionsData(self.__sound_options)
         self.current_preset_config_widget.setVolume(self.preset_volume)
         self.current_preset_config_widget.setSfxOption(self.preset_sfx_option_id)
         self.current_preset_config_widget.blockSignals(False)
 
     def openConfig(self):
-        #self.setupDialogData()
         self.__setUIData()
-        #self.__loadGeneralConfiguration()
         self.dialogWidget.show()     
 
 class BVolumeSlider(QWidget):

@@ -5,6 +5,8 @@ from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer, pyqtSignal
 import time
 
 class InputListener(QObject):
+    canvasClicked = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         
@@ -75,6 +77,7 @@ class InputListener(QObject):
         if (event.type() == QEvent.TabletPress or \
             event.type() == QEvent.MouseButtonPress) and \
             event.button()== Qt.LeftButton:
+            self.canvasClicked.emit()
             self.__is_pressing = True
             self.__cursor_potition = event.pos()
             self.__last_cursor_position_read = event.pos()
@@ -88,6 +91,8 @@ class InputListener(QObject):
 
         return super().eventFilter(obj, event)
 
+input_listener = InputListener()
+
 class BrushPresetListener(QObject):
     currentPresetChanged = pyqtSignal(Resource)
 
@@ -100,7 +105,9 @@ class BrushPresetListener(QObject):
         self.preset_timer.start()
         
         self.__current_preset = None
-    
+
+        input_listener.canvasClicked.connect(self.detect_brush_preset)
+
     def detect_brush_preset(self):
         current_window =Krita.instance().activeWindow()
         if current_window is None:
@@ -126,4 +133,3 @@ class BrushPresetListener(QObject):
         return self.__current_preset
 
 brush_preset_listener = BrushPresetListener()
-input_listener = InputListener()

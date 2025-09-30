@@ -39,19 +39,22 @@ class SoundPlayer:
 
         outdata[:, 0] = samples[:] * exponential_volume
 
-    def setSoundSource(self, sound_source_class):
-        was_playing = self.__is_playing
-        self.stopPlaying()
-        self.__sfx_source = sound_source_class()
-        self.play_stream = sd.OutputStream(
-            samplerate=self.__sfx_source.samplerate,
-            blocksize=BLOCKSIZE,
-            latency='low',
-            channels=1,
-            callback=self.callback
-        )
-        if was_playing:
-            self.startPlaying()
+    def setSoundSource(self, sound_source):
+        previous_samplerate = self.__sfx_source.get_samplerate()
+        self.__sfx_source = sound_source
+        if previous_samplerate != self.__sfx_source:
+
+            was_playing = self.__is_playing
+            self.stopPlaying()
+            self.play_stream = sd.OutputStream(
+                samplerate=self.__sfx_source.samplerate,
+                blocksize=BLOCKSIZE,
+                latency='low',
+                channels=1,
+                callback=self.callback
+            )
+            if was_playing:
+                self.startPlaying()
 
     def volume(self):
         return self.__volume
