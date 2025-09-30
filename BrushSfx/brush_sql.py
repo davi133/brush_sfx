@@ -38,12 +38,6 @@ class KritaResourcesHelper:
 kraResourceHelper = KritaResourcesHelper()
 
 
-class SoundEffectOption:
-    def __init__(self, sfx_id: str, name: str):
-        self.id = sfx_id
-        self.name = name
-
-
 class BrushSfxResourceHelper:
     def __init__(self):
         db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxcache.sqlite')
@@ -85,8 +79,8 @@ class BrushSfxResourceHelper:
             print(e)
             raise e
 
-    def add_sfx(self, sound_effect: SoundEffectOption):
-        params = (sound_effect.sfx_id, sound_effect.name)
+    def add_sfx(self, sfx_id: str, name: str):
+        params = (sfx_id, name)
         self.cur.execute("INSERT OR REPLACE INTO sfx_option VALUES (?, ?)", params)
         self.con.commit()
         
@@ -96,11 +90,16 @@ class BrushSfxResourceHelper:
         self.cur.execute("SELECT preset_filename, sfx_id, options_json FROM rel_preset_sfx WHERE preset_filename = ? ", (preset_filename, ))
         rel_preset_sfx = self.cur.fetchall()
         if len(rel_preset_sfx) > 0:
-            return {
+            preset_sfx =  {
                 "preset_filename": rel_preset_sfx[0][0],
                 "sfx_id": rel_preset_sfx[0][1],
                 "options": rel_preset_sfx[0][2],
             }
+            try:
+                preset_sfx["options"] = json.loads(preset_sfx["options"])
+            except:
+                preset_sfx["options"] = None
+            return preset_sfx
         else:
             return None
 
