@@ -102,7 +102,7 @@ class BrushPresetListener(QObject):
         self.preset_timer = QTimer(self)
         self.preset_timer.setInterval(int(1000*self.__checking_interval_seconds))
         self.preset_timer.timeout.connect(self.detect_brush_preset)
-        #self.preset_timer.start()
+        self.preset_timer.start()
         
         self.__current_preset = None
 

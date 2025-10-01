@@ -46,7 +46,6 @@ class SoundPlayer(QObject):
         previous_samplerate = self.__sfx_source.get_samplerate()
         self.__sfx_source = sound_source
         if previous_samplerate != self.__sfx_source:
-            print("recreating callback")
             was_playing = self.__is_playing
             self.stopPlaying()
             self.play_stream = sd.OutputStream(

@@ -16,7 +16,7 @@ db_exists = os.path.isfile(db_path)
 #bsfx_cur = bsfx_con.cursor()
 
 
-class KritaResourcesHelper:
+class KritaResourceReader:
     def __init__(self):
         db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'resourcecache.sqlite')
         self.con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
@@ -35,10 +35,10 @@ class KritaResourcesHelper:
     def __del__(self):
         self.con.close()
 
-kraResourceHelper = KritaResourcesHelper()
+kraResourceReader = KritaResourceReader()
 
 
-class BrushSfxResourceHelper:
+class BrushSfxResourceRepository:
     def __init__(self):
         db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxcache.sqlite')
         db_exists = os.path.isfile(db_path)
@@ -121,4 +121,4 @@ class BrushSfxResourceHelper:
     def __del__(self):
         self.con.close()
 
-bsfxResourceHelper = BrushSfxResourceHelper()
+bsfxResourceRepository = BrushSfxResourceRepository()

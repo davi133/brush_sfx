@@ -16,16 +16,8 @@ from .sound_source import WavObject, generate_from_file, generate_pen_noise, SFX
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener, brush_preset_listener
 
-from .brush_sql import kraResourceHelper, bsfxResourceHelper
+from .resources import bsfxResourceRepository
  
-class Worker(QObject):
-    
-    def __init__(self):
-        super().__init__()
-    
-    def doWork(self):
-        pass
-
 class BrushSFXExtension(Extension):
 
     soundChanged = pyqtSignal(SFXSource)
@@ -99,7 +91,7 @@ class BrushSFXExtension(Extension):
             "sound_sorce_cache": None,
             "remain_cached": remain_cached
         }
-        bsfxResourceHelper.add_sfx(sfx_id, name)
+        bsfxResourceRepository.add_sfx(sfx_id, name)
         self.__sound_options += [new_sound_option]                                                                                
 
 
@@ -176,7 +168,7 @@ class BrushSFXExtension(Extension):
         if not self.is_preset_using_sfx:
             return
         self.preset_volume = volume
-        bsfxResourceHelper.link_preset_sfx(
+        bsfxResourceRepository.link_preset_sfx(
             self.current_preset.filename(),
             self.preset_sfx_option_id,
             {"volume":volume}
@@ -199,7 +191,7 @@ class BrushSFXExtension(Extension):
         if not self.is_preset_using_sfx:
             return
         self.preset_sfx_option_id = new_choice_id
-        bsfxResourceHelper.link_preset_sfx(
+        bsfxResourceRepository.link_preset_sfx(
             self.current_preset.filename(),
             self.preset_sfx_option_id,
             {"volume":self.preset_volume}
@@ -246,7 +238,7 @@ class BrushSFXExtension(Extension):
         self.current_preset_group.setEnabled(True)
         
         self.current_preset = preset
-        preset_sfx = bsfxResourceHelper.get_preset_sfx(preset.filename())
+        preset_sfx = bsfxResourceRepository.get_preset_sfx(preset.filename())
         if preset_sfx is not None:
             self.preset_sfx_option_id = preset_sfx["sfx_id"]
             self.preset_volume = 1.0
@@ -270,7 +262,7 @@ class BrushSFXExtension(Extension):
 
     def linkPresetWithSfx(self, on):
         if on:
-            bsfxResourceHelper.link_preset_sfx(
+            bsfxResourceRepository.link_preset_sfx(
                 self.current_preset.filename(), 
                 self.general_sfx_option_id, 
                 {"volume":1.0})
@@ -282,7 +274,7 @@ class BrushSFXExtension(Extension):
             self.__setUIData()
         else:
             self.is_preset_using_sfx = False
-            bsfxResourceHelper.unlink_preset_sfx(self.current_preset.filename())
+            bsfxResourceRepository.unlink_preset_sfx(self.current_preset.filename())
     
     def __loadSettingsFromDisc(self):
         __sfx_on_setting = Krita.instance().readSetting("BrushSfx", "brush_sfx_on", "True")
