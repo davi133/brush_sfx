@@ -1,4 +1,6 @@
 
+from PyQt5.QtCore import QObject
+
 import wave
 import random
 import math
@@ -12,8 +14,9 @@ from .filter import apply_filter, PeakFilter
 from .input import InputListener, input_listener
 from .sound_source import PenSFXSource, PencilSFXSource
 
-class SoundPlayer:
+class SoundPlayer(QObject):
     def __init__(self, input_data: InputListener):
+        super().__init__()
         self.__volume = 0.0
         self.__sfx_source = PencilSFXSource()
         self.__is_playing = False
@@ -43,7 +46,7 @@ class SoundPlayer:
         previous_samplerate = self.__sfx_source.get_samplerate()
         self.__sfx_source = sound_source
         if previous_samplerate != self.__sfx_source:
-
+            print("recreating callback")
             was_playing = self.__is_playing
             self.stopPlaying()
             self.play_stream = sd.OutputStream(

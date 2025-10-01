@@ -1,6 +1,6 @@
 from krita import *
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QComboBox, QLabel, QDialog, QSlider
-from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent, QTimer, QPoint
+from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent, QTimer, QPoint, QThread
 from PyQt5.QtGui import QCursor, QGuiApplication
 import time
 import math
@@ -18,14 +18,17 @@ from .input import InputListener, input_listener, brush_preset_listener
 
 from .brush_sql import kraResourceHelper, bsfxResourceHelper
  
-class PresetWidgetListener(QObject):
+class Worker(QObject):
+    
     def __init__(self):
         super().__init__()
-    def eventFilter(self, obj, event):
-        print(obj, event)
-        return super().eventFilter(obj, event)
+    
+    def doWork(self):
+        pass
 
 class BrushSFXExtension(Extension):
+
+    soundChanged = pyqtSignal(SFXSource)
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -36,7 +39,12 @@ class BrushSFXExtension(Extension):
         self.input_listener = input_listener
         self.preset_listener = brush_preset_listener
         self.preset_listener.currentPresetChanged.connect(self.onPresetChange)
+
+        self.sound_player_thread = QThread()
         self.player = sound_player
+        self.player.moveToThread(self.sound_player_thread)
+        self.soundChanged.connect(self.player.setSoundSource)
+        self.sound_player_thread.start()
         
         self.__sound_options = []
         self.sfx_in_use = ""
@@ -79,8 +87,6 @@ class BrushSFXExtension(Extension):
         fdock_dir = dir(Krita.instance().dockers()[0])
         qdock = next((w for w in Krita.instance().dockers() if w.objectName() == 'PresetDocker'), None)
         preset_dock = qdock.findChild(QWidget,'WdgPaintOpPresets')
-        a = PresetWidgetListener()
-        self.dialogWidget.installEventFilter(a)
     
     def preset_clicked(self, resource):
         print("resource")
@@ -225,11 +231,10 @@ class BrushSFXExtension(Extension):
             if general_sfx is not None:
                 if general_sfx["remain_cached"]:
                     if general_sfx["sound_sorce_cache"] is None:
-                        print("creating cache")
                         general_sfx["sound_sorce_cache"] = general_sfx["sound_source_class"]()
-                    self.player.setSoundSource(general_sfx["sound_sorce_cache"])
+                    self.soundChanged.emit(general_sfx["sound_sorce_cache"])
                 else:
-                    self.player.setSoundSource(general_sfx["sound_source_class"]())
+                    self.soundChanged.emit(general_sfx["sound_source_class"]())
     # PRESET ________________________________________________________________________
  
     def onPresetChange(self, preset):
