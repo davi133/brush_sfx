@@ -1,9 +1,12 @@
 
+from krita import *
 from PyQt5.QtWidgets import QApplication, QOpenGLWidget
-from PyQt5.QtCore import Qt, QObject, QEvent, QPoint
+from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer, pyqtSignal
 import time
 
 class InputListener(QObject):
+    canvasClicked = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         
@@ -74,6 +77,7 @@ class InputListener(QObject):
         if (event.type() == QEvent.TabletPress or \
             event.type() == QEvent.MouseButtonPress) and \
             event.button()== Qt.LeftButton:
+            self.canvasClicked.emit()
             self.__is_pressing = True
             self.__cursor_potition = event.pos()
             self.__last_cursor_position_read = event.pos()
@@ -87,5 +91,45 @@ class InputListener(QObject):
 
         return super().eventFilter(obj, event)
 
-
 input_listener = InputListener()
+
+class BrushPresetListener(QObject):
+    currentPresetChanged = pyqtSignal(Resource)
+
+    def __init__(self):
+        super().__init__()
+        self.__checking_interval_seconds = 1
+        self.preset_timer = QTimer(self)
+        self.preset_timer.setInterval(int(1000*self.__checking_interval_seconds))
+        self.preset_timer.timeout.connect(self.detect_brush_preset)
+        self.preset_timer.start()
+        
+        self.__current_preset = None
+
+        input_listener.canvasClicked.connect(self.detect_brush_preset)
+
+    def detect_brush_preset(self):
+        current_window =Krita.instance().activeWindow()
+        if current_window is None:
+            return
+        current_view = current_window.activeView()
+        if current_view is None:
+            return
+        preset = current_view.currentBrushPreset()
+        if preset is None:
+            return
+
+        if self.__current_preset is None:
+            self.__current_preset = preset
+            self.currentPresetChanged.emit(preset)
+            return
+
+        if preset.filename() != self.__current_preset.filename():
+            self.currentPresetChanged.emit(preset)
+        self.__current_preset = preset
+
+    @property
+    def current_preset(self):
+        return self.__current_preset
+
+brush_preset_listener = BrushPresetListener()
