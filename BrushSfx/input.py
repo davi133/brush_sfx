@@ -18,8 +18,14 @@ class InputListener(QObject):
         self.__pressure = 0.0
         self.__is_tablet_input = False
         self.__last_tablet_input_time = time.time()
+        self.__is_over_canvas = False
         
         self.__time_for_tablet = 0.1
+
+
+    @property
+    def is_listening(self):
+        return self.__is_listening
         
     @property
     def is_tablet(self)-> bool:
@@ -41,6 +47,10 @@ class InputListener(QObject):
         movement = self.__last_cursor_position_read - self.__cursor_potition
         self.__last_cursor_position_read = self.__cursor_potition
         return movement
+
+    @property
+    def is_over_canvas(self) -> bool:
+        return self.__is_over_canvas
 
     def startListening(self):
         if not self.__is_listening:
@@ -73,7 +83,7 @@ class InputListener(QObject):
                 self.__is_tablet_input = False
 
         
-
+        #pressing
         if (event.type() == QEvent.TabletPress or \
             event.type() == QEvent.MouseButtonPress) and \
             event.button()== Qt.LeftButton:
@@ -81,6 +91,8 @@ class InputListener(QObject):
             self.__is_pressing = True
             self.__cursor_potition = event.pos()
             self.__last_cursor_position_read = event.pos()
+            if event.type() == QEvent.MouseButtonPress:
+                self.__pressure = 1.0
 
         #releasing
         if (event.type() == QEvent.TabletRelease or \

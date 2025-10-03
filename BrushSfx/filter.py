@@ -49,7 +49,7 @@ class PeakFilter(Filter):
         if not (self.higher_target >= self.higher_smooth and \
                 self.higher_smooth >= self.lower_smooth and \
                 self.lower_smooth >=self.lower_target):
-            raise Exception("invalid values")
+            raise Exception("Invalid values for PeakFilter")
         self.gain = gain
 
     def apply(self, fourier: np.ndarray, frequencies: np.ndarray):
