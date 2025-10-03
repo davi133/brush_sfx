@@ -65,6 +65,13 @@ class InputListener(QObject):
     def eventFilter(self, obj, event):
         if obj.__class__ != QOpenGLWidget:
             return super().eventFilter(obj, event)
+
+        if event.type() == QEvent.Enter:
+            self.__is_over_canvas = True
+        if event.type() == QEvent.Leave:
+            self.__is_over_canvas = False
+
+
         if (self.__is_pressing):
             
             #position

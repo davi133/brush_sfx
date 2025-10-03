@@ -384,7 +384,7 @@ class SpraycanSfx(SFXSource):
         rattle_samples *= (self.__shakeness**2) if input_listener.is_over_canvas else 0
         filtered_samples = filtered_samples +rattle_samples
 
-        self.__shakeness -= 2.5 * deltaTime
+        self.__shakeness -= 2.0 * deltaTime
         self.__last_cursor_speed = speed_vector
         self.__last_qcursor_pos = QCursor.pos()
         self.__last_callback_time = cffi_time.currentTime
