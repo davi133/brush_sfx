@@ -12,7 +12,8 @@ import sounddevice as sd
 from .utils import clamp, lerp
 from .sound import sound_player
 from .constants import DEFAULT_VOLUME, DEFAULT_SOUND_CHOICE
-from .sound_source import WavObject, generate_from_file, generate_pen_noise, SFXSource, PencilSFXSource, PenSFXSource
+from .sound_source import WavObject, generate_from_file, generate_pen_noise, SFXSource, \
+SilenceSfx, EraserSfx, PencilSFXSource, PenSFXSource, PaintBrushSfx ,AirbrushSfx, SpraycanSfx
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener, brush_preset_listener
 
@@ -52,9 +53,14 @@ class BrushSFXExtension(Extension):
         self.preset_volume = 1.0
         self.preset_sfx_option_id = ""
 
+        self.addSoundOption("bsfx_nosound", "[no sound]", SilenceSfx)
+        self.addSoundOption("bsfx_eraser", "eraser", EraserSfx, remain_cached = True)
         self.addSoundOption("bsfx_pencil", "pencil", PencilSFXSource, remain_cached = True)
         self.addSoundOption("bsfx_pen", "pen", PenSFXSource, remain_cached = True)
-        
+        self.addSoundOption("bsfx_paintbrush", "paint brush", PaintBrushSfx, remain_cached = True)
+        self.addSoundOption("bsfx_airbrush", "airbrush", AirbrushSfx, remain_cached = True)
+        self.addSoundOption("bsfx_spraycan", "spray can", SpraycanSfx, remain_cached = True)
+
         self.dialogWidget = QDialog()
         self.__createDialog()
         self.__loadSettingsFromDisc()

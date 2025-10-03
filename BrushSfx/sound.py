@@ -24,7 +24,7 @@ class SoundPlayer(QObject):
         
 
         self.play_stream = sd.OutputStream(
-            samplerate=self.__sfx_source.samplerate,
+            samplerate=self.__sfx_source.get_samplerate(),
             blocksize=BLOCKSIZE,
             latency='low',
             channels=1,
@@ -34,7 +34,6 @@ class SoundPlayer(QObject):
 
     def callback(self, outdata, frames: int, cffi_time, status: sd.CallbackFlags):
 
-        
         movement = self.input_data.cursor_movement
         samples = self.__sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
 
@@ -49,7 +48,7 @@ class SoundPlayer(QObject):
             was_playing = self.__is_playing
             self.stopPlaying()
             self.play_stream = sd.OutputStream(
-                samplerate=self.__sfx_source.samplerate,
+                samplerate=self.__sfx_source.get_samplerate(),
                 blocksize=BLOCKSIZE,
                 latency='low',
                 channels=1,
