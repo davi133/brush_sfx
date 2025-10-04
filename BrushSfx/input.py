@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import QApplication, QOpenGLWidget
 from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer, pyqtSignal
 import time
 
+from .EKritaTools import EKritaTools
+
 class InputListener(QObject):
     canvasClicked = pyqtSignal()
 
@@ -114,6 +116,7 @@ input_listener = InputListener()
 
 class BrushPresetListener(QObject):
     currentPresetChanged = pyqtSignal(Resource)
+    eraserModeChanged = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
@@ -124,6 +127,7 @@ class BrushPresetListener(QObject):
         self.preset_timer.start()
         
         self.__current_preset = None
+        self.__using_eraser = False
 
         input_listener.canvasClicked.connect(self.detect_brush_preset)
 
@@ -137,15 +141,17 @@ class BrushPresetListener(QObject):
         preset = current_view.currentBrushPreset()
         if preset is None:
             return
-
-        if self.__current_preset is None:
+        
+        if self.__current_preset is None or preset.filename() != self.__current_preset.filename():
             self.__current_preset = preset
             self.currentPresetChanged.emit(preset)
-            return
+        
+        kritaEraserAction = Application.action("erase_action")
+        is_using_eraser = kritaEraserAction.isChecked()
+        if is_using_eraser != self.__using_eraser:
+            self.__using_eraser = is_using_eraser
+            self.eraserModeChanged.emit(is_using_eraser)
 
-        if preset.filename() != self.__current_preset.filename():
-            self.currentPresetChanged.emit(preset)
-        self.__current_preset = preset
 
     @property
     def current_preset(self):
