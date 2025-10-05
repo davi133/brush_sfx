@@ -21,12 +21,36 @@ class InputListener(QObject):
         self.__is_over_canvas = False
         
         self.__time_for_tablet = 0.1
+        
+        
+        self.__modifiers = {
+            Qt.Key_Shift: False,
+            Qt.Key_Space: False,
+            Qt.Key_Control: False,
+            Qt.Key_Alt: False
+        }
+
+        #brute force canvas input detection
+        self.__cancel_input = False
+        self.__last_input_sum = 0.0
+        self.__time_for_cancel = (1.0 / 48.0) + 0.1
+        self.__last_cancel_time = time.time()
+        
+        
 
 
     @property
     def is_listening(self):
         return self.__is_listening
         
+    @property
+    def input_cancelled(self):
+        return self.__cancel_input
+
+    @property
+    def is_pressing_modifier(self):
+        return any([self.__modifiers[key] for key in self.__modifiers])
+
     @property
     def is_tablet(self)-> bool:
         return self.__is_tablet_input
@@ -62,18 +86,53 @@ class InputListener(QObject):
             self.__is_listening = False
             QApplication.instance().removeEventFilter(self)
 
+    def canvasInputDetectionBruteForce(self, event):
+        input_sum = 0
+        current_window = Krita.instance().activeWindow()
+        if current_window is not None:
+            current_view = current_window.activeView()
+            current_canvas = current_view.canvas()
+            brush_size = current_view.brushSize()
+            rotation=0
+            zoom=0
+            if current_canvas is not None:
+                rotation = current_canvas.rotation()
+                zoom = current_canvas.zoomLevel()
+            input_sum = zoom + rotation + brush_size
+        
+
+        if self.__last_input_sum != input_sum:
+            self.__last_cancel_time = time.time()     
+
+        self.__last_input_sum = input_sum
+        previous_cancel_status = self.__cancel_input
+        if time.time() < self.__last_cancel_time + self.__time_for_cancel:
+            self.__cancel_input = True
+        else:
+            self.__cancel_input = False
+
     def eventFilter(self, obj, event):
+
         if obj.__class__ != QOpenGLWidget:
             return super().eventFilter(obj, event)
-
+        
+        #Canvas enter/leave
         if event.type() == QEvent.Enter:
             self.__is_over_canvas = True
         if event.type() == QEvent.Leave:
             self.__is_over_canvas = False
 
+        #Modifier detection
+        if event.type() == QEvent.KeyPress:
+            if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
+                self.__modifiers[event.key()] = True
+        if event.type() == QEvent.KeyRelease:
+            if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
+                self.__modifiers[event.key()] = False
+
+        #self.canvasInputDetectionBruteForce(event)
 
         if (self.__is_pressing):
-            
             #position
             if (event.type() == QEvent.TabletMove or \
                 event.type() == QEvent.MouseMove):
@@ -93,7 +152,8 @@ class InputListener(QObject):
         #pressing
         if (event.type() == QEvent.TabletPress or \
             event.type() == QEvent.MouseButtonPress) and \
-            event.button()== Qt.LeftButton:
+            event.button()== Qt.LeftButton and \
+            not self.is_pressing_modifier:
             self.canvasClicked.emit()
             self.__is_pressing = True
             self.__cursor_potition = event.pos()
@@ -114,6 +174,7 @@ input_listener = InputListener()
 
 class BrushPresetListener(QObject):
     currentPresetChanged = pyqtSignal(Resource)
+    eraserModeChanged = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
@@ -124,8 +185,17 @@ class BrushPresetListener(QObject):
         self.preset_timer.start()
         
         self.__current_preset = None
+        self.__using_eraser = False
 
         input_listener.canvasClicked.connect(self.detect_brush_preset)
+        self.__listening_eraser = False
+
+        def __windowCreated():
+            Application.action("erase_action").triggered.connect(self.listenEraser)
+
+        self.__notifier = Krita.instance().notifier()
+        self.__notifier.setActive(True)
+        self.__notifier.windowCreated.connect(__windowCreated)
 
     def detect_brush_preset(self):
         current_window =Krita.instance().activeWindow()
@@ -138,14 +208,14 @@ class BrushPresetListener(QObject):
         if preset is None:
             return
 
-        if self.__current_preset is None:
+        if self.__current_preset is None or preset.filename() != self.__current_preset.filename():
             self.__current_preset = preset
             self.currentPresetChanged.emit(preset)
-            return
+        
 
-        if preset.filename() != self.__current_preset.filename():
-            self.currentPresetChanged.emit(preset)
-        self.__current_preset = preset
+    def listenEraser(self, is_using):
+        self.__using_eraser = is_using
+        self.eraserModeChanged.emit(is_using)
 
     @property
     def current_preset(self):

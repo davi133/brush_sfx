@@ -86,8 +86,6 @@ class BrushSFXExtension(Extension):
         qdock = next((w for w in Krita.instance().dockers() if w.objectName() == 'PresetDocker'), None)
         preset_dock = qdock.findChild(QWidget,'WdgPaintOpPresets')
     
-    def preset_clicked(self, resource):
-        print("resource")
 
     def addSoundOption(self, sfx_id: str, name: str, sound_source_class, remain_cached = False):
         new_sound_option = {
