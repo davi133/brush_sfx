@@ -319,7 +319,6 @@ class EKritaTools:
             EKritaTools.notifier.toolChanged.emit(id, EKritaTools.__TOOLS[id]['widget'].isChecked())
 
         def __windowCreated():
-            print("__windowCreated =======================================================")
             """Executed when a Krita window is created"""
             if EKritaTools.__toolbox is None:
 
@@ -330,7 +329,6 @@ class EKritaTools:
                 for id in list(EKritaTools.__TOOLS.keys()):
                     toolButton = EKritaTools.__toolbox.findChild(QToolButton, id)
                     if toolButton:
-                        print("adding toolbutton")
                         EKritaTools.__TOOLS[id]['widget'] = toolButton
                         toolButton.toggled.connect(EKritaTools.__signalMapper.map)
                         EKritaTools.__signalMapper.setMapping(toolButton, id)

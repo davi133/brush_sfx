@@ -20,7 +20,6 @@ class SoundPlayer(QObject):
         super().__init__()
         self.__volume = 0.0
         self.__sfx_source = PencilSFXSource()
-        print("pencin samplerate is ", self.__sfx_source.get_samplerate())
         self.__is_playing = False
         self.__is_using_valid_tool = 0
         self.__is_using_eraser = 0
