@@ -1,5 +1,5 @@
 # Brush SFX
-This plugin adds sound effect when you draw. Choose from 6 different sounds and assing one for
+This plugin adds sound effects when you draw. Choose from 6 different sounds and assing one for
 each of your brushes. This plugin comes with sounds pre-assigneds for every default brush on krita 
 
 
