@@ -66,7 +66,7 @@ class InputListener(QObject):
     @property
     def cursor_movement(self) -> float:
         """
-        read only once per audio callback
+        read only once per audio callback or it will break
         """
         movement = self.__last_cursor_position_read - self.__cursor_potition
         self.__last_cursor_position_read = self.__cursor_potition
