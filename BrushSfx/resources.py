@@ -3,39 +3,12 @@ import os
 import sqlite3
 from typing import List
 import json
+import shutil
 
 from PyQt5.Qt import *
 
-from .constants import plugin_version, db_version
+from .constants import plugin_version, db_version, dir_path
 
-
-db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxcache.sqlite')
-db_exists = os.path.isfile(db_path)
-
-#bsfx_con = sqlite3.connect(db_path)
-#bsfx_cur = bsfx_con.cursor()
-
-
-class KritaResourceReader:
-    def __init__(self):
-        db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'resourcecache.sqlite')
-        self.con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
-        self.cur = self.con.cursor()
-    
-    def get_all_tags(self)-> List[dict]: # {"id":"id, "name":"name"}
-        self.cur.execute("SELECT id, name FROM tags ORDER BY name")
-        tags = [{"id":tag[0], "name": tag[1]} for tag in self.cur.fetchall()]
-        return tags
-    
-    def get_presets_with_tag(self, tag_id: int)->List[dict]: # {name:"name", filename:"filename"}
-        self.cur.execute("SELECT name, filename FROM resources WHERE resource_type_id = 5 AND id IN (SELECT resource_id FROM resource_tags rt WHERE tag_id = ?)", (tag_id,))
-        presets = [{"name":preset[0], "filename":preset[1]} for preset in self.cur.fetchall()]
-        return presets
-    
-    def __del__(self):
-        self.con.close()
-
-kraResourceReader = KritaResourceReader()
 
 class bsfxConfig:
     def __init__(self,sfx_id: str, use_eraser: bool = False, eraser_sfx_id: str = "", options:dict = {}):
@@ -49,17 +22,20 @@ class bsfxConfig:
 
 class BrushSfxResourceRepository:
     def __init__(self):
-        db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxresources.sqlite')
-        db_exists = os.path.isfile(db_path)
+        self.db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxresources.sqlite')
+        db_exists = os.path.isfile(self.db_path)
         
-        self.con = sqlite3.connect(db_path)
+        if not db_exists:
+            self.__load_default_db()
+        
+        self.con = sqlite3.connect(self.db_path)
         self.cur = self.con.cursor()
         
         #self.con.set_trace_callback(print)
         
-        if not db_exists:
-            self.__create_db()
-
+       
+    def __load_default_db(self):
+        shutil.copy(f"{dir_path}/assets/default.sqlite", self.db_path)
 
     def __create_db(self):
         stmt_version = "CREATE TABLE IF NOT EXISTS bsfx_version (\
