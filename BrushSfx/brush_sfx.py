@@ -75,17 +75,7 @@ class BrushSFXExtension(Extension):
 
     def createActions(self, window):
         action = window.createAction("sfxConfig", "Brush SFX", "tools")
-        action.triggered.connect(self.openConfig)
-
-        action2 = window.createAction("sfxBrushPreset", "TestBrush", "tools")
-        action2.triggered.connect(self.test_brush)
-    
-    def test_brush(self):
-        print("test brush")
-        #fdock_dir = dir(Krita.instance().dockers()[0])
-        #qdock = next((w for w in Krita.instance().dockers() if w.objectName() == 'PresetDocker'), None)
-        #preset_dock = qdock.findChild(QWidget,'WdgPaintOpPresets')
-    
+        action.triggered.connect(self.openConfig)  
 
     def addSoundOption(self, sfx_id: str, name: str, sound_source_class, remain_cached = False):
         new_sound_option = {
@@ -202,17 +192,34 @@ class BrushSFXExtension(Extension):
         if self.is_preset_using_sfx:
             sfx_id_to_use = self.preset_sfx_config.sfx_id
 
-        #mark refactor
-        if self.sfx_config_in_use.sfx_id != sfx_id_to_use:
-            self.sfx_config_in_use.sfx_id = sfx_id_to_use
-            general_sfx = self.__getSoundChoiceById(self.sfx_config_in_use.sfx_id)
-            if general_sfx is not None:
-                if general_sfx["remain_cached"]:
-                    if general_sfx["sound_sorce_cache"] is None:
-                        general_sfx["sound_sorce_cache"] = general_sfx["sound_source_class"]()
-                    self.soundChanged.emit(general_sfx["sound_sorce_cache"])
+        sfx_to_use = self.general_sfx_config
+        if self.is_preset_using_sfx:
+            sfx_to_use = self.preset_sfx_config
+
+        if self.sfx_config_in_use.sfx_id != sfx_to_use.sfx_id:
+            self.sfx_config_in_use.sfx_id = sfx_to_use.sfx_id
+            sfx_option = self.__getSoundChoiceById(self.sfx_config_in_use.sfx_id)
+            if sfx_option is not None:
+                if sfx_option["remain_cached"]:
+                    if sfx_option["sound_sorce_cache"] is None:
+                        sfx_option["sound_sorce_cache"] = sfx_option["sound_source_class"]()
+                    self.soundChanged.emit(sfx_option["sound_sorce_cache"])
                 else:
-                    self.soundChanged.emit(general_sfx["sound_source_class"]())
+                    self.soundChanged.emit(sfx_option["sound_source_class"]())
+        
+        self.sfx_config_in_use.use_eraser = sfx_to_use.use_eraser
+        self.player.enableUseEraser(self.sfx_config_in_use.use_eraser)
+
+        if self.sfx_config_in_use.use_eraser and self.sfx_config_in_use.eraser_sfx_id != sfx_to_use.eraser_sfx_id:
+            self.sfx_config_in_use.eraser_sfx_id = sfx_to_use.eraser_sfx_id
+            sfx_option = self.__getSoundChoiceById(self.sfx_config_in_use.eraser_sfx_id)
+            if sfx_option is not None:
+                if sfx_option["remain_cached"]:
+                    if sfx_option["sound_sorce_cache"] is None:
+                        sfx_option["sound_sorce_cache"] = sfx_option["sound_source_class"]()
+                    self.player.setEraserSoundSource(sfx_option["sound_sorce_cache"])
+                else:
+                    self.player.setEraserSoundSource(sfx_option["sound_source_class"]())
     # PRESET ________________________________________________________________________
  
     def __onPresetChange(self, preset):
@@ -479,6 +486,8 @@ class BSfxConfigWidget(QWidget):
         self.eraser_sound_cb.setCurrentIndex(eraser_index)
         
         self.use_eraser_checkbox.setChecked(Qt.Checked if self.__sfx_config.use_eraser else Qt.Unchecked)
+        self.eraser_label.setEnabled(self.__sfx_config.use_eraser)
+        self.eraser_sound_cb.setEnabled(self.__sfx_config.use_eraser)
         
         self.blockSignals(previous_block)
 
