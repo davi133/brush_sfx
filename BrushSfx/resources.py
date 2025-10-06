@@ -31,10 +31,9 @@ class BrushSfxResourceRepository:
         self.con = sqlite3.connect(self.db_path)
         self.cur = self.con.cursor()
         
-        #self.con.set_trace_callback(print)
-        
        
     def __load_default_db(self):
+        print("[BrushSfx] Loaded default sfx list")
         shutil.copy(f"{dir_path}/assets/default.sqlite", self.db_path)
 
     def __create_db(self):
@@ -61,7 +60,7 @@ class BrushSfxResourceRepository:
             self.cur.execute(stmt_sfx_option)
             self.cur.execute(stmt_preset_sfx)
             self.con.commit()
-            print("[BrushSfx] brushsfxcache.sqlite created")
+            print("[BrushSfx] brushsfxresources.sqlite created")
         except Exception as e:
             print("[BrushSfx] An error ocurred while creating the sqlite database")
             print(e)
