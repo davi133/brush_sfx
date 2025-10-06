@@ -405,7 +405,7 @@ class BSfxConfigWidget(QWidget):
         brush_layout.addWidget(self.brush_sound_cb)
 
         #Eraser option
-        self.use_eraser_checkbox = QCheckBox("Different sound for eraser", self)
+        self.use_eraser_checkbox = QCheckBox("Sound for eraser", self)
         self.use_eraser_checkbox.stateChanged.connect(self.__use_eraser_checked)
 
         # Eraser Sound
