@@ -66,7 +66,7 @@ class InputListener(QObject):
     @property
     def cursor_movement(self) -> float:
         """
-        read only once per audio callback
+        read only once per audio callback or it will break
         """
         movement = self.__last_cursor_position_read - self.__cursor_potition
         self.__last_cursor_position_read = self.__cursor_potition
@@ -211,6 +211,8 @@ class BrushPresetListener(QObject):
         if self.__current_preset is None or preset.filename() != self.__current_preset.filename():
             self.__current_preset = preset
             self.currentPresetChanged.emit(preset)
+            eraser_checked = Application.action("erase_action").isChecked()
+            self.listenEraser(eraser_checked)
         
 
     def listenEraser(self, is_using):
