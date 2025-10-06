@@ -44,6 +44,9 @@ class bsfxConfig:
         self.eraser_sfx_id = eraser_sfx_id
         self.options = options
 
+    def __str__(self):
+        return f"{self.sfx_id}, {self.use_eraser}, {self.eraser_sfx_id}, {self.options}"
+
 class BrushSfxResourceRepository:
     def __init__(self):
         db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxresources.sqlite')
@@ -72,7 +75,8 @@ class BrushSfxResourceRepository:
                             use_eraser INTEGER DEFAULT 0, \
                             eraser_sfx_id TEXT, \
                             options_json TEXT,\
-                            FOREIGN KEY(sfx_id) REFERENCES sfx_option(id)\
+                            FOREIGN KEY(sfx_id) REFERENCES sfx_option(id),\
+                            FOREIGN KEY(eraser_sfx_id) REFERENCES sfx_option(id)\
                         );"
         try:
             self.cur.execute(stmt_version)
@@ -107,15 +111,17 @@ class BrushSfxResourceRepository:
         if len(rel_preset_sfx) > 0:
             preset_sfx =  {
                 "preset_filename": rel_preset_sfx[0][0],
-                "sfx_id": rel_preset_sfx[0][1],
-                "use_eraser": rel_preset_sfx[0][2],
-                "eraser_sfx_id": rel_preset_sfx[0][3],
-                "options": rel_preset_sfx[0][4],
+                "sfx_config": bsfxConfig(
+                    rel_preset_sfx[0][1],
+                    rel_preset_sfx[0][2],
+                    rel_preset_sfx[0][3],
+                    {}
+                )
             }
             try:
-                preset_sfx["options"] = json.loads(preset_sfx["options"])
+                preset_sfx["sfx_config"].options = json.loads(rel_preset_sfx[0][4])
             except:
-                preset_sfx["options"] = None
+                preset_sfx["sfx_config"].options = {}
             return preset_sfx
         else:
             return None
