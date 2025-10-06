@@ -211,6 +211,8 @@ class BrushPresetListener(QObject):
         if self.__current_preset is None or preset.filename() != self.__current_preset.filename():
             self.__current_preset = preset
             self.currentPresetChanged.emit(preset)
+            eraser_checked = Application.action("erase_action").isChecked()
+            self.listenEraser(eraser_checked)
         
 
     def listenEraser(self, is_using):

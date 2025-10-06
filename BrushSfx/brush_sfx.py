@@ -259,11 +259,12 @@ class BrushSFXExtension(Extension):
             bsfxResourceRepository.link_preset_sfx(self.current_preset.filename(), self.preset_sfx_config)
             
             self.is_preset_using_sfx = True
-
             self.__setUIData()
         else:
             self.is_preset_using_sfx = False
             bsfxResourceRepository.unlink_preset_sfx(self.current_preset.filename())
+            self.refreshVolumeOfPlayer()
+            self.refreshSoundSourceOfPlayer()
     
     def __loadSettingsFromDisc(self):
         __sfx_on_setting = Krita.instance().readSetting("BrushSfx", "brush_sfx_on", "True")
