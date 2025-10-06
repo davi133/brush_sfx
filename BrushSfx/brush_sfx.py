@@ -290,17 +290,13 @@ class BrushSFXExtension(Extension):
     def __setUIData(self):
         self.SFX_checkbox.setChecked(Qt.Checked if self.is_sfx_on else Qt.Unchecked)
         self.general_config_widget.blockSignals(True)
-        self.general_config_widget.sfxConfigChanged.disconnect(self.__changeGeneralConfig)
         self.general_config_widget.setOptionsData(self.__sound_options)
         self.general_config_widget.setSfxConfig(self.general_sfx_config)
-        self.general_config_widget.sfxConfigChanged.connect(self.__changeGeneralConfig)
         self.general_config_widget.blockSignals(False)
 
 
         self.current_preset_group.blockSignals(True)
-        self.current_preset_group.toggled.disconnect(self.linkPresetWithSfx) # consider removing
         self.current_preset_group.setChecked(self.is_preset_using_sfx)
-        self.current_preset_group.toggled.connect(self.linkPresetWithSfx) # consider removing
         self.current_preset_group.blockSignals(False)
 
         self.current_preset_config_widget.blockSignals(True)
