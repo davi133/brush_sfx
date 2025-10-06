@@ -1,5 +1,6 @@
 # Brush SFX
-This plugin adds sound effect when you draw 
+This plugin adds sound effect when you draw. Choose from 6 different sounds and assing one for
+each of your brushes. This plugin comes with sounds pre-assigneds for every default brush on krita 
 
 
 ## Installation 
@@ -15,7 +16,7 @@ This plugin adds sound effect when you draw
 
 On krita's menu bar go to `Tools > Brush SFX`.
 The `SFX` option enables and disables the sound effects and it will be On by default.
-The `Volume` option lets you chose the general volume of the sound effect. The `Brush sound` 
+The `Volume` option lets you choose the general volume of the sound effect. The `Brush sound` 
 and `Eraser sound` option lets you choose which sound you want for your brush and eraser. 
 If the `Sound for eraser` option is marked, the plugin will use the selected eraser sound when
 using the brush's eraser mode, if it's not marked it will play no sound when using the 
