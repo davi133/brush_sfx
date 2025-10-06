@@ -17,6 +17,14 @@ class bsfxConfig:
         self.eraser_sfx_id = eraser_sfx_id
         self.options = options
 
+
+class bsfxConfig:
+    def __init__(self,sfx_id: str, use_eraser: bool = False, eraser_sfx_id: str = "", options:dict = {}):
+        self.sfx_id = sfx_id
+        self.use_eraser = use_eraser
+        self.eraser_sfx_id = eraser_sfx_id
+        self.options = options
+
     def __str__(self):
         return f"{self.sfx_id}, {self.use_eraser}, {self.eraser_sfx_id}, {self.options}"
 
@@ -24,7 +32,7 @@ class BrushSfxResourceRepository:
     def __init__(self):
         self.db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxresources.sqlite')
         db_exists = os.path.isfile(self.db_path)
-        
+
         if not db_exists:
             self.__load_default_db()
         
