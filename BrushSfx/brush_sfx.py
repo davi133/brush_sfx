@@ -308,7 +308,7 @@ class BrushSFXExtension(Extension):
         self.__setUIData()
         self.dialogWidget.show()     
 
-class BVolumeSlider(QWidget):
+class VolumeSlider(QWidget):
     volumeChanged = pyqtSignal(float)
     volumeSliderReleased = pyqtSignal(float)
 
@@ -342,6 +342,7 @@ class BVolumeSlider(QWidget):
     def __value_change(self, value: int):
         volume = int(value)/100.0
         self.__volume = clamp(volume, 0.0, 1.0)
+        self.__updateUI()
         self.volumeSliderReleased.emit(self.__volume)
 
     def __move_slider(self, value: int):
@@ -385,7 +386,7 @@ class BSfxConfigWidget(QWidget):
             # label
         volume_label = QLabel("Volume:", self)
             # slider
-        self.volume_slider = BVolumeSlider(self.__sfx_config.options.get("volume",1.0), self)
+        self.volume_slider = VolumeSlider(self.__sfx_config.options.get("volume",1.0), self)
         self.volume_slider.volumeSliderReleased.connect(self.__volume_changed)
             #layout
         volume_layout = QVBoxLayout()
