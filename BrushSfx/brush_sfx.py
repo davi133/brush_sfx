@@ -19,7 +19,7 @@ SilenceSfx, EraserSfx, PencilSFXSource, PenSFXSource, PaintBrushSfx ,AirbrushSfx
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener, brush_preset_listener
 
-from .resources import bsfxConfig, bsfxResourceRepository
+from .resources import bsfxConfig, bsfxResourceRepository, kraResourceReader
  
 class BrushSFXExtension(Extension):
 
@@ -42,16 +42,17 @@ class BrushSFXExtension(Extension):
         self.sound_player_thread.start()
         
         self.__sound_options = []
-        self.sfx_config_in_use:bsfxConfig = bsfxConfig("", True, "", {"volume":1.0})
+        self.sfx_config_in_use:bsfxConfig = bsfxConfig("", True, "",1.0)
         
         #general settings
         self.is_sfx_on = False
-        self.general_sfx_config: bsfxConfig = bsfxConfig("", True, "", {"volume":0.5})
+        self.general_sfx_config: bsfxConfig = bsfxConfig("", True, "", 0.5)
         
         #preset settings
         self.current_preset = None
+        self.current_preset_id = 0
         self.is_preset_using_sfx = False
-        self.preset_sfx_config: bsfxConfig = bsfxConfig("", True, "", {"volume":1.0})
+        self.preset_sfx_config: bsfxConfig = bsfxConfig("", True, "", 1.0)
         
         self.addSoundOption("bsfx_nosound", "[no sound]", SilenceSfx)
         self.addSoundOption("bsfx_eraser", "eraser", EraserSfx, remain_cached = True)
@@ -76,6 +77,13 @@ class BrushSFXExtension(Extension):
     def createActions(self, window):
         action = window.createAction("sfxConfig", "Brush SFX", "tools/scripts")
         action.triggered.connect(self.openConfig)  
+
+        action = window.createAction("sfx_test", "sfx test", "tools/scripts")
+        action.triggered.connect(self.test_db) 
+
+    def test_db(self):
+        return
+        bsfxResourceRepository.update_db_hoje()
 
     def addSoundOption(self, sfx_id: str, name: str, sound_source_class, remain_cached = False):
         new_sound_option = {
@@ -148,7 +156,7 @@ class BrushSFXExtension(Extension):
     def __changeGeneralConfig(self, sfx_config):
         self.general_sfx_config = copy.deepcopy(sfx_config)
 
-        volume = self.general_sfx_config.options.get("volume", 1.0)
+        volume = self.general_sfx_config.volume
         Krita.instance().writeSetting("BrushSfx", "volume", str(int(volume*100)))
 
         Krita.instance().writeSetting("BrushSfx", "brush_sound", self.general_sfx_config.sfx_id)
@@ -162,16 +170,16 @@ class BrushSFXExtension(Extension):
         
         self.preset_sfx_config = copy.deepcopy(sfx_config)
         if self.current_preset is not None: 
-            bsfxResourceRepository.link_preset_sfx(self.current_preset.filename(), self.preset_sfx_config )
+            bsfxResourceRepository.link_preset_sfx(self.current_preset_id, self.preset_sfx_config )
         self.refreshSoundSourceOfPlayer()
         self.refreshVolumeOfPlayer()
 
     ## Volume __________________________________________________________________________________
     def refreshVolumeOfPlayer(self):
         #mark refactor
-        actual_volume = self.general_sfx_config.options.get("volume", 0.5)
+        actual_volume = self.general_sfx_config.volume
         if self.is_preset_using_sfx:
-            actual_volume *= self.preset_sfx_config.options.get("volume", 1.0)
+            actual_volume *= self.preset_sfx_config.volume
         self.player.setVolume(actual_volume)
 
     ## Sound Choice ______________________________________________________________
@@ -231,8 +239,8 @@ class BrushSFXExtension(Extension):
         self.current_preset_group.setEnabled(True)
         
         self.current_preset = preset
-        preset_sfx = bsfxResourceRepository.get_preset_sfx(preset.filename())
-        preset_sfx_config = bsfxResourceRepository.get_preset_sfx(preset.filename())
+        self.current_preset_id = kraResourceReader.get_preset_id_by_filename(preset.filename())
+        preset_sfx = bsfxResourceRepository.get_preset_sfx(self.current_preset_id)
         if preset_sfx is not None:
             self.preset_sfx_config = preset_sfx["sfx_config"]
             self.is_preset_using_sfx = True
@@ -254,15 +262,15 @@ class BrushSFXExtension(Extension):
     def linkPresetWithSfx(self, on):
         if on:
             self.preset_sfx_config = copy.deepcopy(self.general_sfx_config)
-            self.preset_sfx_config.options["volume"] = 1.0
+            self.preset_sfx_config.volume = 1.0
 
-            bsfxResourceRepository.link_preset_sfx(self.current_preset.filename(), self.preset_sfx_config)
+            bsfxResourceRepository.link_preset_sfx(self.current_preset_id, self.preset_sfx_config)
             
             self.is_preset_using_sfx = True
             self.__setUIData()
         else:
             self.is_preset_using_sfx = False
-            bsfxResourceRepository.unlink_preset_sfx(self.current_preset.filename())
+            bsfxResourceRepository.unlink_preset_sfx(self.current_preset_id)
             self.refreshVolumeOfPlayer()
             self.refreshSoundSourceOfPlayer()
     
@@ -275,7 +283,7 @@ class BrushSFXExtension(Extension):
             __volume_setting = clamp(int(__volume_setting), 0, 100)
         else:
             __volume_setting = DEFAULT_VOLUME
-        self.general_sfx_config.options["volume"] = __volume_setting/100
+        self.general_sfx_config.volume = __volume_setting/100
 
         __sfx_choice_setting = Krita.instance().readSetting("BrushSfx", "brush_sound", DEFAULT_SFX_ID)
         self.general_sfx_config.sfx_id = __sfx_choice_setting
@@ -375,7 +383,7 @@ class BSfxConfigWidget(QWidget):
     
     def __init__(self, parent):
         super().__init__(parent)
-        self.__sfx_config: bsfxConfig = bsfxConfig("", False, "", {"volume":1.0})
+        self.__sfx_config: bsfxConfig = bsfxConfig("", False, "", 1.0)
         self.__options_data = []
 
 
@@ -386,7 +394,7 @@ class BSfxConfigWidget(QWidget):
             # label
         volume_label = QLabel("Volume:", self)
             # slider
-        self.volume_slider = VolumeSlider(self.__sfx_config.options.get("volume",1.0), self)
+        self.volume_slider = VolumeSlider(self.__sfx_config.volume, self)
         self.volume_slider.volumeSliderReleased.connect(self.__volume_changed)
             #layout
         volume_layout = QVBoxLayout()
@@ -427,7 +435,7 @@ class BSfxConfigWidget(QWidget):
         self.layout().addLayout(eraser_layout)
 
     def __volume_changed(self, volume: float):
-        self.__sfx_config.options["volume"] = volume
+        self.__sfx_config.volume = volume
         self.sfxConfigChanged.emit(self.__sfx_config)
         self.volumeChanged.emit(volume)
     
@@ -469,7 +477,7 @@ class BSfxConfigWidget(QWidget):
     def __refreshUI(self):
         previous_block = self.blockSignals(True)
 
-        volume = self.__sfx_config.options.get("volume",1.0)
+        volume = self.__sfx_config.volume
         self.volume_slider.setVolume(volume)
        
         brush_index = -1
