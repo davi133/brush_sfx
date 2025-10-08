@@ -123,7 +123,7 @@ class EraserSfx(SFXSource):
     def __generate_eraser_noise(self):
         samples = np.random.rand(self.get_samplerate())
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.98),
+            PeakFilter(-100, 0, 25000, 38000, -0.968),
             PeakFilter(13000,15000,15100,17000,2),
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/self.get_samplerate())
