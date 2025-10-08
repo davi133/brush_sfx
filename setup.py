@@ -24,6 +24,7 @@ import shutil
 
 repo_dir = pathlib.Path(__file__).parent
 pykrita_dir = repo_dir.parent
+resources_dir = pykrita_dir.parent
 
 if repo_dir.name == "pykrita":
     print("No setup is needed, the plugin should already run")
@@ -31,5 +32,6 @@ if pykrita_dir.name != "pykrita":
     print("This setup should be used when the repo is inside the pykrita directory")
 else:
     shutil.copy(repo_dir / "brush_sfx.desktop", pykrita_dir)
+    shutil.copytree(repo_dir/"BrushSfx"/"actions", resources_dir/ "actions",  dirs_exist_ok=True)
     shutil.copytree(repo_dir/"BrushSfx", pykrita_dir/"BrushSfx", dirs_exist_ok=True)
     print("Setup successful")

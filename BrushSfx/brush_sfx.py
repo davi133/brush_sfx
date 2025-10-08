@@ -505,9 +505,6 @@ class BSfxConfigWidget(QWidget):
             combo_box.setCurrentIndex(-1)
 
 
-    
-
-
 # And add the extension to Krita's list of extensions:
 exten = BrushSFXExtension(Krita.instance())
 Krita.instance().addExtension(exten)
