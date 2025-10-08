@@ -21,14 +21,6 @@ class KritaResourceReader:
         result = self.cur.fetchall()
         preset_id = result[0][0]
         return preset_id
-
-    #TODO delete later
-    def get_preset_by_file_list(self, filename_list: List[str])-> List[dict]: # {id: 0, filename: "filename"}
-        #sql="select * from sqlitetable where rowid in ({seq})".format(seq=','.join(['?']*len(args)))
-        sql ="SELECT id, filename FROM resources WHERE filename IN ({seq})".format(seq=','.join(['?']*len(filename_list)))
-        self.cur.execute(sql, filename_list)
-        presets =  {preset[1]: preset[0] for preset in self.cur.fetchall()}
-        return presets
     
     def __del__(self):
         self.con.close()
@@ -57,59 +49,6 @@ class BrushSfxResourceRepository:
         self.cur = self.con.cursor()
         #self.con.set_trace_callback(print)
         
-    def update_db_hoje(self):
-        return
-        # GET OBJECTS
-        self.cur.execute("SELECT preset_filename, sfx_id, use_eraser, eraser_sfx_id, options_json FROM rel_preset_sfx")
-        all_rel_preset_sfx = self.cur.fetchall()
-        filenames = [row[0] for row in all_rel_preset_sfx]
-        #print(filenames)
-
-        #GET IDS FOR FILENAMES
-        resources_dict = kraResourceReader.get_preset_by_file_list(filenames)
-        print(resources_dict)
-
-
-        #discard filenames not found
-        #all_rel_preset_sfx = []
-
-        #NEW OBJECTS
-        new_rel = {resources_dict[row[0]]: bsfxConfig2(row[1],row[2],row[3], json.loads(row[4])["volume"])
-        for row in all_rel_preset_sfx if resources_dict.get(row[0], None) is not None} 
-
-        print(new_rel)
-        
-        # CREATE NEW TABLE
-        stmt_preset_sfx = "CREATE TABLE rel_preset_sfx_aux (\
-                            preset_id INTEGER PRIMARY KEY, \
-                            sfx_id TEXT NOT NULL,\
-                            use_eraser INTEGER DEFAULT 0, \
-                            eraser_sfx_id TEXT, \
-                            volume REAL,\
-                            FOREIGN KEY(sfx_id) REFERENCES sfx_option(id),\
-                            FOREIGN KEY(eraser_sfx_id) REFERENCES sfx_option(id)\
-                        );"
-        self.cur.execute(stmt_preset_sfx)
-        self.con.commit()
-
-        #TRANSFER OLDER TABLE TO NEW TABLE
-        for key in new_rel:
-            self.link_preset_sfx(key, new_rel[key])
-        self.con.commit()
-
-        # DELETE OLD TABLE
-
-        stmt_delete = "DROP TABLE rel_preset_sfx"
-        self.cur.execute(stmt_delete)
-        self.con.commit()
-
-        # RENAME NEW TABLE
-        stmt_rename = "ALTER TABLE rel_preset_sfx_aux RENAME TO rel_preset_sfx;"
-        self.cur.execute(stmt_rename)
-        self.con.commit()
-
-
-
 
     def __load_default_db(self):
         print("[BrushSfx] Loaded default sfx list")

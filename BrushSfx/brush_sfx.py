@@ -78,13 +78,6 @@ class BrushSFXExtension(Extension):
         action = window.createAction("sfxConfig", "Brush SFX", "tools/scripts")
         action.triggered.connect(self.openConfig)  
 
-        action = window.createAction("sfx_test", "sfx test", "tools/scripts")
-        action.triggered.connect(self.test_db) 
-
-    def test_db(self):
-        return
-        bsfxResourceRepository.update_db_hoje()
-
     def addSoundOption(self, sfx_id: str, name: str, sound_source_class, remain_cached = False):
         new_sound_option = {
             "sfx_id": sfx_id,
