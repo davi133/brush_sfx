@@ -74,7 +74,7 @@ class BrushSFXExtension(Extension):
         pass
 
     def createActions(self, window):
-        action = window.createAction("sfxConfig", "Brush SFX", "tools")
+        action = window.createAction("sfxConfig", "Brush SFX", "tools/scripts")
         action.triggered.connect(self.openConfig)  
 
     def addSoundOption(self, sfx_id: str, name: str, sound_source_class, remain_cached = False):
