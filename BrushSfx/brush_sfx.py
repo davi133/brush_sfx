@@ -109,7 +109,7 @@ class BrushSFXExtension(Extension):
             # slider
         self.volume_slider = VolumeSlider(self.general_sfx_config.volume, self.dialogWidget)
         self.volume_slider.volumeSliderReleased.connect(self.__volume_changed)
-        self.volume_slider.setSliderWidth(280)
+        self.volume_slider.setFixedWidth(280)
             # layout
         volume_layout = QVBoxLayout()
         volume_layout.addWidget(self.volume_label)
@@ -354,7 +354,8 @@ class VolumeSlider(QWidget):
         
         # value label 
         self.volume_value_label = QLabel("100", self)
-        self.volume_value_label.setFixedWidth(20)
+        self.__size_of_label = 22
+        self.volume_value_label.setFixedWidth(self.__size_of_label)
         # layout
         volume_slider_layout = QHBoxLayout()
 
@@ -390,6 +391,9 @@ class VolumeSlider(QWidget):
     def getVolume(self) -> float:
         return self.__volume
     
+    def setFixedWidth(self, width: int):
+        self.volume_slider.setFixedWidth(width - self.__size_of_label)
+
     def setSliderWidth(self, width: int):
         self.volume_slider.setFixedWidth(width)
 
@@ -481,10 +485,6 @@ class BSfxConfigWidget(QWidget):
             self.__sfx_config.eraser_sfx_id = self.__options_data[new_index]["sfx_id"]
         self.sfxConfigChanged.emit(self.__sfx_config)
 
-    def setFixedWidth(self, width: int):
-        super().setFixedWidth(width)
-        self.volume_slider.setSliderWidth(width-40)
-
     def setOptionsData(self, options: List[dict]):
         self.__options_data = options
         self.__refreshCombobox(self.brush_sound_cb, self.__sfx_config.sfx_id)
@@ -498,7 +498,10 @@ class BSfxConfigWidget(QWidget):
         self.__sfx_config = copy.deepcopy(sfx_config)
         self.__refreshUI()
         self.sfxConfigChanged.emit(self.__sfx_config)
-
+    
+    def setFixedWidth(self, width: int):
+        super().setFixedWidth(width)
+        self.volume_slider.setFixedWidth(width-40)
 
     def __refreshUI(self):
         previous_block = self.blockSignals(True)
