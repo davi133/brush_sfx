@@ -102,11 +102,25 @@ class BrushSFXExtension(Extension):
         self.SFX_checkbox = QCheckBox("SFX", self.dialogWidget)
         self.SFX_checkbox.stateChanged.connect(self.switchOnOff)
         
+        # GENERAL =====================================================================================================================================
+        # Volume slider
+            # label
+        self.volume_label = QLabel("Master volume:", self.dialogWidget)
+            # slider
+        self.volume_slider = VolumeSlider(self.general_sfx_config.volume, self.dialogWidget)
+        self.volume_slider.volumeSliderReleased.connect(self.__volume_changed)
+        self.volume_slider.setSliderWidth(280)
+            # layout
+        volume_layout = QVBoxLayout()
+        volume_layout.addWidget(self.volume_label)
+        volume_layout.addWidget(self.volume_slider)
+
         self.general_config_widget = BSfxConfigWidget(self.dialogWidget)
+        self.general_config_widget.setShowVolume(False)
         self.general_config_widget.setFixedWidth(320)
         self.general_config_widget.sfxConfigChanged.connect(self.__changeGeneralConfig)
 
-        # BRUSH PRESET EXCLUSIVE =====================================================================================================================================
+        # BRUSH PRESET =====================================================================================================================================
         self.current_preset_group = QGroupBox("Use different sound on current preset", self.dialogWidget)
         self.current_preset_group.setEnabled(False)
         self.current_preset_group.setCheckable(True)
@@ -127,6 +141,7 @@ class BrushSFXExtension(Extension):
         # =====================================================================================================================================
         self.dialogWidget.setLayout(main_layout)
         self.dialogWidget.layout().addWidget(self.SFX_checkbox)
+        self.dialogWidget.layout().addLayout(volume_layout)
         self.dialogWidget.layout().addWidget(self.general_config_widget)
         self.dialogWidget.layout().addWidget(self.current_preset_group)
 
@@ -147,10 +162,9 @@ class BrushSFXExtension(Extension):
 
     ## Object __________________________________________________________________________________
     def __changeGeneralConfig(self, sfx_config):
+        actual_volume = self.general_sfx_config.volume
         self.general_sfx_config = copy.deepcopy(sfx_config)
-
-        volume = self.general_sfx_config.volume
-        Krita.instance().writeSetting("BrushSfx", "volume", str(int(volume*100)))
+        self.general_sfx_config.volume = actual_volume
 
         Krita.instance().writeSetting("BrushSfx", "brush_sound", self.general_sfx_config.sfx_id)
         Krita.instance().writeSetting("BrushSfx", "use_eraser", str(self.general_sfx_config.use_eraser))
@@ -168,6 +182,12 @@ class BrushSFXExtension(Extension):
         self.refreshVolumeOfPlayer()
 
     ## Volume __________________________________________________________________________________
+
+    def __volume_changed(self, volume):
+        self.general_sfx_config.volume = volume
+        Krita.instance().writeSetting("BrushSfx", "volume", str(int(volume*100)))
+        self.refreshVolumeOfPlayer()
+    
     def refreshVolumeOfPlayer(self):
         #mark refactor
         actual_volume = self.general_sfx_config.volume
@@ -266,6 +286,7 @@ class BrushSFXExtension(Extension):
             bsfxResourceRepository.unlink_preset_sfx(self.current_preset_id)
             self.refreshVolumeOfPlayer()
             self.refreshSoundSourceOfPlayer()
+            self.__setUIData()
     
     def __loadSettingsFromDisc(self):
         __sfx_on_setting = Krita.instance().readSetting("BrushSfx", "brush_sfx_on", "True")
@@ -289,10 +310,15 @@ class BrushSFXExtension(Extension):
 
 
     def __setUIData(self):
+        self.volume_slider.blockSignals(True)
+        self.volume_slider.setVolume(self.general_sfx_config.volume)
+        self.volume_slider.blockSignals(False)
+
         self.SFX_checkbox.setChecked(Qt.Checked if self.is_sfx_on else Qt.Unchecked)
         self.general_config_widget.blockSignals(True)
         self.general_config_widget.setOptionsData(self.__sound_options)
         self.general_config_widget.setSfxConfig(self.general_sfx_config)
+        self.general_config_widget.setEnabled(not self.is_preset_using_sfx)
         self.general_config_widget.blockSignals(False)
 
 
@@ -380,24 +406,26 @@ class BSfxConfigWidget(QWidget):
         self.__options_data = []
 
 
+        self.__show_volume = True
+
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
         # Volume slider
             # label
-        volume_label = QLabel("Volume:", self)
+        self.volume_label = QLabel("Volume:", self)
             # slider
         self.volume_slider = VolumeSlider(self.__sfx_config.volume, self)
         self.volume_slider.volumeSliderReleased.connect(self.__volume_changed)
             #layout
         volume_layout = QVBoxLayout()
-        volume_layout.addWidget(volume_label)
+        volume_layout.addWidget(self.volume_label)
         volume_layout.addWidget(self.volume_slider)
 
         # Brush Sound
             # label
         brush_label = QLabel("Brush sound:", self)
-        brush_label.setFixedWidth(77)
+        brush_label.setFixedWidth(80)
             #combobox
         self.brush_sound_cb = QComboBox(self)
         self.brush_sound_cb.currentIndexChanged.connect(self.__brush_sound_changed)
@@ -413,7 +441,7 @@ class BSfxConfigWidget(QWidget):
         # Eraser Sound
             # label
         self.eraser_label = QLabel("Eraser sound:", self)
-        self.eraser_label.setFixedWidth(77)
+        self.eraser_label.setFixedWidth(80)
             #combobox
         self.eraser_sound_cb = QComboBox(self)
         self.eraser_sound_cb.currentIndexChanged.connect(self.__eraser_sound_changed)
@@ -455,23 +483,30 @@ class BSfxConfigWidget(QWidget):
 
     def setFixedWidth(self, width: int):
         super().setFixedWidth(width)
-        self.volume_slider.setSliderWidth(width-30)
+        self.volume_slider.setSliderWidth(width-40)
 
     def setOptionsData(self, options: List[dict]):
         self.__options_data = options
         self.__refreshCombobox(self.brush_sound_cb, self.__sfx_config.sfx_id)
         self.__refreshCombobox(self.eraser_sound_cb, self.__sfx_config.eraser_sfx_id)
 
+    def setShowVolume(self, show):
+        self.__show_volume = show
+        self.__refreshUI()
+
     def setSfxConfig(self, sfx_config: bsfxConfig):
         self.__sfx_config = copy.deepcopy(sfx_config)
         self.__refreshUI()
         self.sfxConfigChanged.emit(self.__sfx_config)
 
+
     def __refreshUI(self):
         previous_block = self.blockSignals(True)
 
+        self.volume_label.setVisible(self.__show_volume)
         volume = self.__sfx_config.volume
         self.volume_slider.setVolume(volume)
+        self.volume_slider.setVisible(self.__show_volume)
        
         brush_index = -1
         eraser_index = -1
