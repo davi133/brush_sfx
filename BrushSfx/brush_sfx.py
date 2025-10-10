@@ -109,11 +109,12 @@ class BrushSFXExtension(Extension):
             # slider
         self.volume_slider = VolumeSlider(self.general_sfx_config.volume, self.dialogWidget)
         self.volume_slider.volumeSliderReleased.connect(self.__volume_changed)
-        self.volume_slider.setFixedWidth(280)
+        self.volume_slider.setFixedWidth(310)
             # layout
         volume_layout = QVBoxLayout()
         volume_layout.addWidget(self.volume_label)
         volume_layout.addWidget(self.volume_slider)
+        volume_layout.addStretch()
 
         self.general_config_widget = BSfxConfigWidget(self.dialogWidget)
         self.general_config_widget.setShowVolume(False)
@@ -354,15 +355,15 @@ class VolumeSlider(QWidget):
         
         # value label 
         self.volume_value_label = QLabel("100", self)
-        self.__size_of_label = 22
+        self.__size_of_label = 30
         self.volume_value_label.setFixedWidth(self.__size_of_label)
         # layout
         volume_slider_layout = QHBoxLayout()
-
-        volume_slider_layout.addWidget(self.volume_slider, alignment =Qt.AlignLeft)
-        volume_slider_layout.addWidget(self.volume_value_label, alignment =Qt.AlignLeft)
         volume_slider_layout.setContentsMargins(0, 0, 0, 0)
         volume_slider_layout.addStretch()
+        volume_slider_layout.addWidget(self.volume_slider, alignment =Qt.AlignLeft)
+        volume_slider_layout.addWidget(self.volume_value_label, alignment =Qt.AlignLeft)
+        
 
         self.setLayout(volume_slider_layout)
         self.setVolume(value)
@@ -393,6 +394,7 @@ class VolumeSlider(QWidget):
     
     def setFixedWidth(self, width: int):
         self.volume_slider.setFixedWidth(width - self.__size_of_label)
+        super().setFixedWidth(width)
 
     def setSliderWidth(self, width: int):
         self.volume_slider.setFixedWidth(width)
@@ -429,7 +431,7 @@ class BSfxConfigWidget(QWidget):
         # Brush Sound
             # label
         brush_label = QLabel("Brush sound:", self)
-        brush_label.setFixedWidth(80)
+        brush_label.setFixedWidth(100)
             #combobox
         self.brush_sound_cb = QComboBox(self)
         self.brush_sound_cb.currentIndexChanged.connect(self.__brush_sound_changed)
@@ -445,7 +447,7 @@ class BSfxConfigWidget(QWidget):
         # Eraser Sound
             # label
         self.eraser_label = QLabel("Eraser sound:", self)
-        self.eraser_label.setFixedWidth(80)
+        self.eraser_label.setFixedWidth(100)
             #combobox
         self.eraser_sound_cb = QComboBox(self)
         self.eraser_sound_cb.currentIndexChanged.connect(self.__eraser_sound_changed)
@@ -501,7 +503,7 @@ class BSfxConfigWidget(QWidget):
     
     def setFixedWidth(self, width: int):
         super().setFixedWidth(width)
-        self.volume_slider.setFixedWidth(width-40)
+        self.volume_slider.setFixedWidth(width)
 
     def __refreshUI(self):
         previous_block = self.blockSignals(True)
