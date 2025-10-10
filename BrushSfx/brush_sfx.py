@@ -396,8 +396,6 @@ class VolumeSlider(QWidget):
         self.volume_slider.setFixedWidth(width - self.__size_of_label)
         super().setFixedWidth(width)
 
-    def setSliderWidth(self, width: int):
-        self.volume_slider.setFixedWidth(width)
 
 class BSfxConfigWidget(QWidget):
     sfxConfigChanged = pyqtSignal(bsfxConfig)
