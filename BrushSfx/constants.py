@@ -3,7 +3,7 @@ import os
 plugin_version = "0.3.0"
 db_version = "v1"
 dir_path = os.path.dirname(os.path.realpath(__file__))
-setting_defaults_mode = True
+BAKING_DEFAULTS_MODE = False #spaghetti recipe
 
 BLOCKSIZE = 1000
 
