@@ -7,7 +7,7 @@ import shutil
 
 from PyQt5.Qt import *
 
-from .constants import plugin_version, db_version, dir_path
+from .constants import plugin_version, db_version, dir_path, BAKING_DEFAULTS_MODE
 
 class KritaResourceReader:
     def __init__(self):
@@ -21,6 +21,13 @@ class KritaResourceReader:
         result = self.cur.fetchall()
         preset_id = result[0][0]
         return preset_id
+    
+    def get_preset_by_file_list(self, filename_list: List[str])-> dict: # {"filename": id}
+        #sql="select * from sqlitetable where rowid in ({seq})".format(seq=','.join(['?']*len(args)))
+        sql ="SELECT id, filename FROM resources WHERE filename IN ({seq})".format(seq=','.join(['?']*len(filename_list)))
+        self.cur.execute(sql, filename_list)
+        presets =  {preset[1]: preset[0] for preset in self.cur.fetchall()}
+        return presets
     
     def __del__(self):
         self.con.close()
@@ -40,19 +47,61 @@ class bsfxConfig:
 class BrushSfxResourceRepository:
     def __init__(self):
         self.db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxresources.sqlite')
-        db_exists = os.path.isfile(self.db_path)
+        self.default_db_path =f"{dir_path}/assets/default.sqlite"
+        self.__baking_defaults_mode = BAKING_DEFAULTS_MODE
 
+        self.con = None
+        self.cur = None
+
+        if self.__baking_defaults_mode:
+            self.db_path = self.default_db_path
+            print("[BrushSfx] Setting defaults mode")
+        db_exists = os.path.isfile(self.db_path)
+        self.__connect()
         if not db_exists:
+            self.__create_db()
             self.__load_default_db()
-        
-        self.con = sqlite3.connect(self.db_path)
-        self.cur = self.con.cursor()
         #self.con.set_trace_callback(print)
         
 
+    def __connect(self):
+        print(f"[BrushSfx] Connecting to sqlite:{self.db_path}")
+        self.con = sqlite3.connect(self.db_path)
+        self.cur = self.con.cursor()
+    def __disconnect(self):
+        self.con.close()
+        self.con = None
+        self.cur = None
+
     def __load_default_db(self):
-        print("[BrushSfx] Loaded default sfx list")
-        shutil.copy(f"{dir_path}/assets/default.sqlite", self.db_path)
+        if self.__baking_defaults_mode:
+            return
+        with sqlite3.connect(f"file:{self.default_db_path}?mode=ro", uri=True) as con_default:
+            cur_default = con_default.cursor()
+            
+            #copying sfx_options
+            cur_default.execute("SELECT id, name FROM sfx_option")
+            for row in cur_default.fetchall():
+                self.add_sfx(row[0], row[1])
+
+            #loading defaults (with wrong ids)
+            cur_default.execute("SELECT preset_id, sfx_id, use_eraser, eraser_sfx_id, volume, preset_filename FROM rel_preset_sfx")
+            all_rel_preset_sfx = cur_default.fetchall()
+            filenames = [row[5] for row in all_rel_preset_sfx]
+
+            #get correct ids from filenames
+            filename_ids = kraResourceReader.get_preset_by_file_list(filenames)
+
+            #create new objects with correct
+            new_rel = {filename_ids[row[5]]: bsfxConfig(row[1],row[2],row[3], row[4])
+            for row in all_rel_preset_sfx if filename_ids.get(row[5], None) is not None} 
+
+            #insert with correct ids
+            for key in new_rel:
+                self.link_preset_sfx(key, new_rel[key])
+
+        print("[BrushSfx] Loaded default sfx configuration")
+
 
     def __create_db(self):
         stmt_version = "CREATE TABLE IF NOT EXISTS bsfx_version (\
@@ -68,6 +117,7 @@ class BrushSfxResourceRepository:
                             use_eraser INTEGER DEFAULT 0, \
                             eraser_sfx_id TEXT, \
                             volume REAL,\
+                            preset_filename TEXT,\
                             FOREIGN KEY(sfx_id) REFERENCES sfx_option(id),\
                             FOREIGN KEY(eraser_sfx_id) REFERENCES sfx_option(id)\
                         );"
@@ -91,7 +141,7 @@ class BrushSfxResourceRepository:
         
     
     def get_preset_sfx(self, preset_id: int) -> dict:
-        self.cur.execute( "SELECT preset_id, sfx_id, use_eraser, eraser_sfx_id, volume FROM rel_preset_sfx WHERE preset_id = ?", (preset_id,))
+        self.cur.execute("SELECT preset_id, sfx_id, use_eraser, eraser_sfx_id, volume FROM rel_preset_sfx WHERE preset_id = ?", (preset_id,))
         rel_preset_sfx = self.cur.fetchall()
         if len(rel_preset_sfx) > 0:
             preset_sfx =  {
@@ -107,14 +157,38 @@ class BrushSfxResourceRepository:
         else:
             return None
     
-    def link_preset_sfx(self, preset_id: int, sfx_config: bsfxConfig):
-        params = [(preset_id, sfx_config.sfx_id, sfx_config.use_eraser, sfx_config.eraser_sfx_id, sfx_config.volume)]
-        self.cur.executemany("INSERT OR REPLACE INTO rel_preset_sfx VALUES (?, ?, ?, ?, ?)", params)
+    def get_preset_sfx_by_filename(self, preset_filename:str) -> dict:
+        print("get_preset_sfx_by_filename", preset_filename)
+        self.cur.execute("SELECT preset_id, sfx_id, use_eraser, eraser_sfx_id, volume FROM rel_preset_sfx WHERE preset_filename = ?", (preset_filename,))
+        rel_preset_sfx = self.cur.fetchall()
+        if len(rel_preset_sfx) > 0:
+            preset_sfx =  {
+                "preset_id": rel_preset_sfx[0][0],
+                "sfx_config": bsfxConfig(
+                    rel_preset_sfx[0][1],
+                    rel_preset_sfx[0][2],
+                    rel_preset_sfx[0][3],
+                    rel_preset_sfx[0][4],
+                ),
+                "preset_filename": preset_filename
+            }
+            return preset_sfx
+        else:
+            return None
+        
+    
+    def link_preset_sfx(self, preset_id: int, sfx_config: bsfxConfig, preset_filename:str = ""):
+        params = [(preset_id, sfx_config.sfx_id, sfx_config.use_eraser, sfx_config.eraser_sfx_id, sfx_config.volume, preset_filename)]
+        self.cur.executemany("INSERT OR REPLACE INTO rel_preset_sfx VALUES (?, ?, ?, ?, ?, ?)", params)
         self.con.commit()
     
 
     def unlink_preset_sfx(self, preset_id: int):
         self.cur.execute("DELETE FROM rel_preset_sfx WHERE preset_id = ?", (preset_id, ))
+        self.con.commit()
+
+    def unlink_preset_sfx_by_filename(self, preset_filename: int):
+        self.cur.execute("DELETE FROM rel_preset_sfx WHERE preset_filename = ?", (preset_filename, ))
         self.con.commit()
     
     def __del__(self):
