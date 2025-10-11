@@ -169,8 +169,8 @@ class BrushSfxResourceRepository:
                     rel_preset_sfx[0][2],
                     rel_preset_sfx[0][3],
                     rel_preset_sfx[0][4],
-                    preset_filename
-                )
+                ),
+                "preset_filename": preset_filename
             }
             return preset_sfx
         else:
