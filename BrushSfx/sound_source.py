@@ -63,7 +63,7 @@ class SFXSource:
         self.__zero_to_one = np.linspace(start=0,stop=1, num=BLOCKSIZE)
         self.__zero_to_one = self.__zero_to_one * self.__zero_to_one * (3.0 -2.0 * self.__zero_to_one)
 
-        self.max_speed = 10 # in screens per second
+        self.max_speed = 12 # in screens per second
         self._window_height_px = QGuiApplication.instance().primaryScreen().size().height()
         
 
@@ -158,7 +158,7 @@ class PenSFXSource(SFXSource):
 
         speed =  self._getSpeed(deltaTime, cursor_movement)
 
-        shift_by_speed = -50 + ( 175 * (speed**2))
+        shift_by_speed = -50 + ( 100 * (speed**2))
         filters =[
             PeakFilter(650+shift_by_speed, 700+shift_by_speed, 720+shift_by_speed, 1320+shift_by_speed, 2),
             PeakFilter(650+shift_by_speed, 700+shift_by_speed, 720+shift_by_speed, 1320+shift_by_speed, 6), 
@@ -200,7 +200,7 @@ class PencilSFXSource(SFXSource):
         super().__init__()
 
         self.base_sound_data = generate_from_file(f"{dir_path}/assets/29a-pencil.wav")
-        self.base_sound_data.samples *= 1.5
+        self.base_sound_data.samples *= 1.75
 
         self._set_samplerate(self.base_sound_data.samplerate)
 
@@ -236,7 +236,8 @@ class PaintBrushSfx(SFXSource):
     def __init__(self):
         super().__init__()
         self.base_sound_data = self.__generate_paintbrush_noise()
-        
+        self.max_speed = 15 # in screens per second
+
         self.__frames_processed = 0
         self.__last_callback_time = 0
         self.__samples_as_last_callback = np.zeros(BLOCKSIZE)
@@ -262,7 +263,8 @@ class PaintBrushSfx(SFXSource):
     def __generate_paintbrush_noise(self):
         samples = np.random.rand(self.get_samplerate())
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.8),
+            PeakFilter(-100, 0, 25000, 38000, -0.83),
+            PeakFilter(-100, 0, 1200, 3800, 0.5),
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/self.get_samplerate())
         samples = apply_filter(samples, self.get_samplerate(), frequencies_cache=ft_freq, filters=filters)

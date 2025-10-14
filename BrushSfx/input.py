@@ -112,10 +112,13 @@ class InputListener(QObject):
             self.__cancel_input = False
 
     def eventFilter(self, obj, event):
-
         if obj.__class__ != QOpenGLWidget:
             return super().eventFilter(obj, event)
-        
+
+        if event.type() == QEvent.WindowDeactivate:
+            for key in self.__modifiers:
+                self.__modifiers[key] = False
+
         #Canvas enter/leave
         if event.type() == QEvent.Enter:
             self.__is_over_canvas = True
