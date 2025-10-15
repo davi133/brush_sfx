@@ -197,9 +197,8 @@ class FancyMovemetListener(QObject):
     last_movement_time = time.time()
     last_position = QPoint(0,0)
     
-    last_read_last_position = QPoint(0,0)
     movement_complex_array = [(0+0j)]
-    #deltaTime_array= []
+    pressure_array = [0.0]
     timestamps_array = [time.time()]
 
     def detect_movement(self):
@@ -215,14 +214,11 @@ class FancyMovemetListener(QObject):
         #if random.random() > 0.5:
         #    time.sleep(0.1)
         self.movement_semaphore.acquire(1)
-        #self.deltaTime_array +=[deltaTime]
         self.timestamps_array +=[now]
 
         self.movement_complex_array += [(movement.x() + 1j* movement.y())/(deltaTime+0.0001)]
+        self.pressure_array += [self.input_listener.pressure]
         self.movement_semaphore.release(1)
-        #if self.__is_pressing:
-        #    speed = self.movement_complex_array[-1] / deltaTime
-        #    print(speed, deltaTime)
 
     trailing_speed = 0+0j
     def read_speed(self):
@@ -230,11 +226,13 @@ class FancyMovemetListener(QObject):
         # copy data
         time_array = np.array(self.timestamps_array)
         movement = np.array(self.movement_complex_array)
+        pressure = np.array(self.pressure_array)
         #deltaTime = np.array(self.deltaTime_array)
         
         #reset data
         self.timestamps_array = [self.timestamps_array[-1]]
         self.movement_complex_array = [self.movement_complex_array[-1]]
+        self.pressure_array = [self.pressure_array[-1]]
         #self.deltaTime_array = []
         self.movement_semaphore.release(1)
         
@@ -248,6 +246,7 @@ class FancyMovemetListener(QObject):
         input_readings ={
             "movement": movement,
             "time_array": time_array,
+            "pressure": pressure
             #"yinterp": yinterp
         }
         self.trailing_speed = self.movement_complex_array[-1] if len(self.movement_complex_array) >0 else (0+0j)
