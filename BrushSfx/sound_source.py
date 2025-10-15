@@ -63,7 +63,7 @@ class SFXSource:
         self.__zero_to_one = np.linspace(start=0,stop=1, num=BLOCKSIZE)
         self.__zero_to_one = self.__zero_to_one * self.__zero_to_one * (3.0 -2.0 * self.__zero_to_one)
 
-        self.max_speed = 10 # in screens per second
+        self.max_speed = 12 # in screens per second
         self._window_height_px = QGuiApplication.instance().primaryScreen().size().height()
         
 
@@ -123,7 +123,7 @@ class EraserSfx(SFXSource):
     def __generate_eraser_noise(self):
         samples = np.random.rand(self.get_samplerate())
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.968),
+            PeakFilter(-100, 0, 25000, 38000, -0.960),
             PeakFilter(13000,15000,15100,17000,2),
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/self.get_samplerate())
@@ -158,10 +158,10 @@ class PenSFXSource(SFXSource):
 
         speed =  self._getSpeed(deltaTime, cursor_movement)
 
-        shift_by_speed = -50 + ( 175 * (speed**2))
+        shift_by_speed = -50 + ( 75 * (speed**2))
         filters =[
             PeakFilter(650+shift_by_speed, 700+shift_by_speed, 720+shift_by_speed, 1320+shift_by_speed, 2),
-            PeakFilter(650+shift_by_speed, 700+shift_by_speed, 720+shift_by_speed, 1320+shift_by_speed, 6), 
+            PeakFilter(650+shift_by_speed, 700+shift_by_speed, 720+shift_by_speed, 1320+shift_by_speed, 5), 
             #No, its not the same as using one PeakFilter with a bigger value
         ]
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
@@ -200,7 +200,7 @@ class PencilSFXSource(SFXSource):
         super().__init__()
 
         self.base_sound_data = generate_from_file(f"{dir_path}/assets/29a-pencil.wav")
-        self.base_sound_data.samples *= 1.5
+        self.base_sound_data.samples *= 2.0
 
         self._set_samplerate(self.base_sound_data.samplerate)
 
@@ -236,7 +236,8 @@ class PaintBrushSfx(SFXSource):
     def __init__(self):
         super().__init__()
         self.base_sound_data = self.__generate_paintbrush_noise()
-        
+        self.max_speed = 15 # in screens per second
+
         self.__frames_processed = 0
         self.__last_callback_time = 0
         self.__samples_as_last_callback = np.zeros(BLOCKSIZE)
@@ -262,7 +263,8 @@ class PaintBrushSfx(SFXSource):
     def __generate_paintbrush_noise(self):
         samples = np.random.rand(self.get_samplerate())
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.8),
+            PeakFilter(-100, 0, 25000, 38000, -0.83),
+            PeakFilter(-100, 0, 1200, 3800, 0.5),
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/self.get_samplerate())
         samples = apply_filter(samples, self.get_samplerate(), frequencies_cache=ft_freq, filters=filters)
@@ -300,11 +302,7 @@ class AirbrushSfx(SFXSource):
         is_moving_smooth = 1 if is_moving or (self._frames_since_last_move <= 3 and is_pressing) else 0
         self._frames_since_last_move = 0 if is_moving else self._frames_since_last_move + 1
 
-        peak_pos = 12000
-        peak_spread = 3500 + (7000 * pressure) 
-        filters =[
-            PeakFilter(peak_pos-peak_spread,peak_pos-10,peak_pos+10,peak_pos+peak_spread, 4),
-        ]
+        filters =[]
         all_samples *= is_pressing * lerp(pressure, 0.45, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
         self._mix_samples(self.__samples_as_last_callback, filtered_samples)
@@ -315,10 +313,9 @@ class AirbrushSfx(SFXSource):
 
     def __generate_airbrush_noise(self):
         samples = np.random.rand(self.get_samplerate())
-        peak_pos = 13000
-        peak_spread = 4000
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.96) 
+            PeakFilter(-100, 0, 25000, 38000, -0.94),
+            PeakFilter(7000,11990,12010,17000, 4)
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/self.get_samplerate())
         samples = apply_filter(samples, self.get_samplerate(), frequencies_cache=ft_freq, filters=filters)
@@ -363,10 +360,7 @@ class SpraycanSfx(SFXSource):
         is_moving_smooth = 1 if is_moving or (self.__frames_since_last_move <= 3 and is_pressing) else 0
         self.__frames_since_last_move = 0 if is_moving else self.__frames_since_last_move + 1
 
-        peak_pos = 12000
-        peak_spread = 3500 + (7000 * pressure) 
-        filters =[
-        ]
+        filters =[]
         all_samples *= is_moving_smooth * lerp(pressure, 0.45, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
         self._mix_samples(self.__samples_as_last_callback, filtered_samples)
@@ -392,11 +386,9 @@ class SpraycanSfx(SFXSource):
 
     def __generate_spray_noise(self):
         samples = np.random.rand(self.get_samplerate())
-        peak_pos = 12000
-        peak_spread = 5000
         filters = [
             PeakFilter(-100, 0, 25000, 38000, -0.94),
-            PeakFilter(peak_pos-peak_spread,peak_pos-10,peak_pos+10,peak_pos+peak_spread, 4)
+            PeakFilter(3250,11990,12010,20750, 4),
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/self.get_samplerate())
         samples = apply_filter(samples, self.get_samplerate(), frequencies_cache=ft_freq, filters=filters)

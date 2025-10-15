@@ -99,7 +99,7 @@ class BrushSFXExtension(Extension):
         main_layout.setContentsMargins(15, 20, 15, 20)
 
         # CheckBox general feature
-        self.SFX_checkbox = QCheckBox("SFX", self.dialogWidget)
+        self.SFX_checkbox = QCheckBox("Sound Effects", self.dialogWidget)
         self.SFX_checkbox.stateChanged.connect(self.switchOnOff)
         
         # GENERAL =====================================================================================================================================
