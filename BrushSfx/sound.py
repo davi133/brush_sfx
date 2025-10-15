@@ -61,7 +61,7 @@ class SoundPlayer(QObject):
 
         movement_reads = self.input_data.fancy_movement.read_speed()
         
-        xvals = np.linspace(movement_reads["time_array"][0], movement_reads["time_array"][-1], 1000)
+        xvals = np.linspace(movement_reads["time_array"][0], movement_reads["time_array"][-1], BLOCKSIZE)
         speed_array = np.interp(xvals, movement_reads["time_array"], movement_reads["movement"])
 
 
