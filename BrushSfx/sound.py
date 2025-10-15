@@ -58,9 +58,26 @@ class SoundPlayer(QObject):
     def callback(self, outdata, frames: int, cffi_time, status: sd.CallbackFlags):
 
         movement = self.input_data.cursor_movement
+
+        movement_reads = self.input_data.fancy_movement.read_speed()
+        
+        xvals = np.linspace(movement_reads["time_array"][0], movement_reads["time_array"][-1], 1000)
+        speed_array = np.interp(xvals, movement_reads["time_array"], movement_reads["movement"])
+
+
+        if self.input_data.pressure >0 and False:
+            print("sound reading")
+            if movement_reads["movement"].size >0:
+                print(movement_reads["movement"])
+                print(movement_reads["time_array"])
+
         if not self.__is_using_eraser:
-            #print("using brush")
-            samples = self.__brush_sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
+
+            if self.__brush_sfx_source.__class__ == PencilSFXSource:
+                samples = self.__brush_sfx_source.get_samples_POC(cffi_time, speed_array, self.input_data.pressure)
+            else:
+                 samples = self.__brush_sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
+
         elif self.__is_using_eraser and self.__use_eraser_sfx:
             #print("using eraser")
             samples = self.__eraser_sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
@@ -70,7 +87,7 @@ class SoundPlayer(QObject):
 
         exponential_volume = (math.pow(10, 3/10*self.__volume) - 1.0)
 
-        outdata[:, 0] = samples[:] * exponential_volume * self.__is_using_valid_tool
+        outdata[:, 0] = samples[:BLOCKSIZE] * exponential_volume * self.__is_using_valid_tool
 
     def setSoundSource(self, sound_source):
         previous_samplerate = self.__brush_sfx_source.get_samplerate()

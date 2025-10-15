@@ -1,8 +1,14 @@
 
 from krita import *
 from PyQt5.QtWidgets import QApplication, QOpenGLWidget
-from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer, pyqtSignal
+from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer, pyqtSignal, QSemaphore
 import time
+
+import random
+
+import numpy as np
+
+from .utils import Vector2
 
 class InputListener(QObject):
     canvasClicked = pyqtSignal()
@@ -36,8 +42,17 @@ class InputListener(QObject):
         self.__time_for_cancel = (1.0 / 48.0) + 0.1
         self.__last_cancel_time = time.time()
         
-        
 
+        self.movement_timer = QTimer(self)
+        self.movement_timer.setInterval(int(1000/75))
+
+        self.fancy_thread = QThread()
+        self.fancy_movement = FancyMovemetListener(self)
+        self.fancy_movement.moveToThread(self.fancy_thread)
+        
+        self.movement_timer.timeout.connect(self.fancy_movement.detect_movement)
+        self.fancy_thread.start()
+        self.movement_timer.start()
 
     @property
     def is_listening(self):
@@ -169,6 +184,74 @@ class InputListener(QObject):
             self.__is_pressing = False
 
         return super().eventFilter(obj, event)
+
+
+
+class FancyMovemetListener(QObject):
+    def __init__(self, input_listener):
+        super().__init__()
+        self.movement_semaphore = QSemaphore(1)
+        self.input_listener = input_listener
+        
+
+    last_movement_time = time.time()
+    last_position = QPoint(0,0)
+    
+    last_read_last_position = QPoint(0,0)
+    movement_complex_array = [(0+0j)]
+    #deltaTime_array= []
+    timestamps_array = [time.time()]
+
+    def detect_movement(self):
+        now = time.time()
+        deltaTime = now-self.last_movement_time
+        self.last_movement_time = now
+        
+        
+        pos = QCursor.pos()
+        movement = pos - self.last_position
+        self.last_position =  pos
+        
+        #if random.random() > 0.5:
+        #    time.sleep(0.1)
+        self.movement_semaphore.acquire(1)
+        #self.deltaTime_array +=[deltaTime]
+        self.timestamps_array +=[now]
+
+        self.movement_complex_array += [(movement.x() + 1j* movement.y())/(deltaTime+0.0001)]
+        self.movement_semaphore.release(1)
+        #if self.__is_pressing:
+        #    speed = self.movement_complex_array[-1] / deltaTime
+        #    print(speed, deltaTime)
+
+    trailing_speed = 0+0j
+    def read_speed(self):
+        self.movement_semaphore.acquire(1)
+        # copy data
+        time_array = np.array(self.timestamps_array)
+        movement = np.array(self.movement_complex_array)
+        #deltaTime = np.array(self.deltaTime_array)
+        
+        #reset data
+        self.timestamps_array = [self.timestamps_array[-1]]
+        self.movement_complex_array = [self.movement_complex_array[-1]]
+        #self.deltaTime_array = []
+        self.movement_semaphore.release(1)
+        
+        #if time_array.size <=0:
+        #    time_array = np.array([time.time()])
+        #    movement = np.array([self.trailing_speed])
+        #xvals = np.linspace(time_array[0], time_array[-1], 10)
+        #yinterp = np.interp(xvals, time_array, movement)
+
+
+        input_readings ={
+            "movement": movement,
+            "time_array": time_array,
+            #"yinterp": yinterp
+        }
+        self.trailing_speed = self.movement_complex_array[-1] if len(self.movement_complex_array) >0 else (0+0j)
+        return input_readings
 
 input_listener = InputListener()
 

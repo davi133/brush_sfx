@@ -209,6 +209,34 @@ class PencilSFXSource(SFXSource):
         self.__samples_as_last_callback = np.zeros(BLOCKSIZE)
 
         self.__frequencies_cache = np.fft.fftfreq(BLOCKSIZE*2, d=1/self.get_samplerate())
+        self.__frequencies_cache_POC = np.fft.fftfreq(BLOCKSIZE, d=1/self.get_samplerate())
+
+    def get_samples_POC(self, cffi_time, speed_array: np.ndarray, pressure: float) -> np.ndarray:
+        #deltaTime = cffi_time.currentTime - self.__last_callback_time 
+        all_samples = self.__get_samples_from_base_POC()
+
+        speed =  self.get_speed_POC(speed_array)
+        filters =[
+            #PeakFilter(200,400,1000,1700,2.5 * clamp((2*pressure-1), 0, 1))
+        ]
+        all_samples *= speed *  lerp(pressure, 0.3 if pressure > 0 else 0.0, 1.0)
+        filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache_POC, filters)
+        #self._mix_samples(self.__samples_as_last_callback, filtered_samples)
+
+        #self.__samples_as_last_callback = filtered_samples[BLOCKSIZE:]
+        #self.__last_callback_time = cffi_time.currentTime
+        return filtered_samples[:BLOCKSIZE]
+
+    def get_speed_POC(self, speed_array):
+        speed_px = np.abs(speed_array)
+        speed_screen = speed_px/self._window_height_px
+        speed = speed_screen/self.max_speed
+        return np.clip(speed, 0.0, 1.0)
+    
+    def __get_samples_from_base_POC(self):
+        samples = np.roll(self.base_sound_data.samples, shift=-self.__frames_processed)
+        self.__frames_processed += BLOCKSIZE
+        return samples[:BLOCKSIZE]
 
     def get_samples(self, cffi_time, cursor_movement: QPoint, pressure: float) -> np.ndarray:
         deltaTime = cffi_time.currentTime - self.__last_callback_time 
