@@ -11,6 +11,15 @@ assing one for each of your brushes. This plugin comes with sounds pre-assigned 
     enable the plugin.
 4.  Restart Krita.
 
+### Linux
+You will also need to install the portaudio library
+
+### On Ubuntu
+`sudo apt install portaudio19-dev`
+
+### On Arch
+`sudo pacman -S portaudio`
+
 ## Configuration
 
 On krita's menu bar go to `Tools > Scripts > Brush SFX` or press `F8`.
