@@ -12,5 +12,10 @@ checkPipLib([
             ])
 
 
+
 from .brush_sfx import *
+from .constants import plugin_version
+
+__version__ = plugin_version
+
 print("[BrushSfx] Module initialized without erros")
