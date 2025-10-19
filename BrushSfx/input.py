@@ -2,6 +2,7 @@
 from krita import *
 from PyQt5.QtWidgets import QApplication, QOpenGLWidget
 from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer, pyqtSignal
+from PyQt5.QtGui import QWindow
 import time
 
 class InputListener(QObject):
@@ -112,6 +113,15 @@ class InputListener(QObject):
             self.__cancel_input = False
 
     def eventFilter(self, obj, event):
+        if obj.__class__ == QWindow:
+            #Modifier detection
+            if event.type() == QEvent.KeyPress:
+                if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
+                    self.__modifiers[event.key()] = True
+            if event.type() == QEvent.KeyRelease:
+                if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
+                    self.__modifiers[event.key()] = False
+        
         if obj.__class__ != QOpenGLWidget:
             return super().eventFilter(obj, event)
 
@@ -125,13 +135,7 @@ class InputListener(QObject):
         if event.type() == QEvent.Leave:
             self.__is_over_canvas = False
 
-        #Modifier detection
-        if event.type() == QEvent.KeyPress:
-            if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
-                self.__modifiers[event.key()] = True
-        if event.type() == QEvent.KeyRelease:
-            if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
-                self.__modifiers[event.key()] = False
+        
 
         #self.canvasInputDetectionBruteForce(event)
 
@@ -214,9 +218,11 @@ class BrushPresetListener(QObject):
         if self.__current_preset is None or preset.filename() != self.__current_preset.filename():
             self.__current_preset = preset
             self.currentPresetChanged.emit(preset)
-            eraser_checked = Application.action("erase_action").isChecked()
+
+        eraser_checked = Application.action("erase_action").isChecked()
+        if eraser_checked != self.__using_eraser:
+            self.__using_eraser = eraser_checked
             self.listenEraser(eraser_checked)
-        
 
     def listenEraser(self, is_using):
         self.__using_eraser = is_using

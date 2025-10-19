@@ -59,13 +59,10 @@ class SoundPlayer(QObject):
 
         movement = self.input_data.cursor_movement
         if not self.__is_using_eraser:
-            #print("using brush")
             samples = self.__brush_sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
         elif self.__is_using_eraser and self.__use_eraser_sfx:
-            #print("using eraser")
             samples = self.__eraser_sfx_source.get_samples(cffi_time, movement, self.input_data.pressure)
         else:
-            #print("using nothing")
             samples = np.zeros(BLOCKSIZE)
 
         exponential_volume = (math.pow(10, 3/10*self.__volume) - 1.0)

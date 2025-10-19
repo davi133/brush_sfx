@@ -14,7 +14,7 @@ import sounddevice as sd
 from .utils import clamp, lerp
 from .sound import sound_player
 from .constants import DEFAULT_VOLUME, DEFAULT_SFX_ID, DEFAULT_USE_ERASER, DEFAULT_ERASER_SFX_ID, BAKING_DEFAULTS_MODE
-from .sound_source import WavObject, generate_from_file, generate_pen_noise, SFXSource, \
+from .sound_source import WavObject, generate_from_file, SFXSource, \
 SilenceSfx, EraserSfx, PencilSFXSource, PenSFXSource, PaintBrushSfx ,AirbrushSfx, SpraycanSfx
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener, brush_preset_listener
