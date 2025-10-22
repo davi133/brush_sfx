@@ -83,7 +83,7 @@ class EraserSfx(SFXSource):
         super().__init__()
 
         self.base_sound_data = self.__generate_eraser_noise()
-
+        self.max_speed=8
         self.__frames_processed = 0
         self.__last_callback_time = 0
         self.__samples_as_last_callback = np.zeros(BLOCKSIZE)
@@ -105,7 +105,7 @@ class EraserSfx(SFXSource):
     def __generate_eraser_noise(self):
         samples = np.random.rand(self.get_samplerate())
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.960),
+            PeakFilter(-100, 0, 25000, 38000, -0.930),
             PeakFilter(13000,15000,15100,17000,2),
             PeakFilter(17000, 18000, 24000, 30000, -1)
         ]
@@ -184,6 +184,7 @@ class PencilSFXSource(SFXSource):
 
         self.base_sound_data = generate_from_file(f"{dir_path}/assets/29a-pencil.wav")
         self.base_sound_data.samples *= 2.0
+        self.max_speed = 15
 
         self._set_samplerate(self.base_sound_data.samplerate)
 
