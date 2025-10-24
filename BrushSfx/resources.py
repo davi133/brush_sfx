@@ -44,6 +44,26 @@ class bsfxConfig:
     def __str__(self):
         return f"{self.sfx_id}, {self.use_eraser}, {self.eraser_sfx_id}, {self.volume}"
 
+
+class BrushSfxResourceFile:
+    def __init__(self):
+        self.file_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxresources.bsfx')
+        file_exists = os.path.isfile(self.db_path)
+        self.file = open(self.file_path, "wt")
+
+    def save_sfx(self, preset_name: str, sfx_config: bsfxConfig):
+        pass
+    
+    def get_sfx(self, preset_name: str):
+        pass
+
+    def remove_sfx(self, preset_name: str):
+        pass
+
+
+
+
+
 class BrushSfxResourceRepository:
     def __init__(self):
         self.db_path =os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxresources.sqlite')
@@ -63,6 +83,9 @@ class BrushSfxResourceRepository:
             self.__load_default_db()
         #self.con.set_trace_callback(print)
         
+    def __migrate(self):
+        pass
+
 
     def __connect(self):
         print(f"[BrushSfx] Connecting to sqlite:{self.db_path}")
@@ -195,3 +218,4 @@ class BrushSfxResourceRepository:
         self.con.close()
 
 bsfxResourceRepository = BrushSfxResourceRepository()
+bsfxResourceFile = BrushSfxResourceFile()
