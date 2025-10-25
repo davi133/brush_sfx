@@ -13,14 +13,13 @@ import sounddevice as sd
 
 from .utils import clamp, lerp
 from .sound import sound_player
-from .constants import DEFAULT_VOLUME, DEFAULT_SFX_ID, DEFAULT_USE_ERASER, DEFAULT_ERASER_SFX_ID, BAKING_DEFAULTS_MODE
+from .constants import DEFAULT_VOLUME, DEFAULT_SFX_ID, DEFAULT_USE_ERASER, DEFAULT_ERASER_SFX_ID
 from .sound_source import WavObject, generate_from_file, SFXSource, \
 SilenceSfx, EraserSfx, PencilSFXSource, PenSFXSource, PaintBrushSfx ,AirbrushSfx, SpraycanSfx
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener, brush_preset_listener
 
-from .resources import bsfxConfig, bsfxFile
-
+from .resources import bsfxConfig, bsfxResourceRepository
  
 class BrushSFXExtension(Extension):
 
@@ -178,7 +177,7 @@ class BrushSFXExtension(Extension):
         
         self.preset_sfx_config = copy.deepcopy(sfx_config)
         if self.current_preset is not None:
-            bsfxFile.save_sfx(self.current_preset.name(), self.preset_sfx_config)
+            bsfxResourceRepository.save_sfx(self.current_preset.name(), self.preset_sfx_config)
         self.refreshSoundSourceOfPlayer()
         self.refreshVolumeOfPlayer()
 
@@ -255,7 +254,7 @@ class BrushSFXExtension(Extension):
         self.current_preset = preset
         self.current_preset_name =  preset.name()
         
-        preset_sfx = bsfxFile.get_sfx(preset.name())
+        preset_sfx = bsfxResourceRepository.get_sfx(preset.name())
         if preset_sfx is not None:
             self.preset_sfx_config = preset_sfx["sfx_config"]
             self.is_preset_using_sfx = True
@@ -279,14 +278,14 @@ class BrushSFXExtension(Extension):
             self.preset_sfx_config = copy.deepcopy(self.general_sfx_config)
             self.preset_sfx_config.volume = 1.0
             if self.current_preset is not None:
-                bsfxFile.save_sfx(self.current_preset.name(), self.preset_sfx_config)
+                bsfxResourceRepository.save_sfx(self.current_preset.name(), self.preset_sfx_config)
             
             self.is_preset_using_sfx = True
             self.__setUIData()
         else:
             self.is_preset_using_sfx = False
             if self.current_preset is not None:
-                bsfxFile.remove_sfx(self.current_preset.name())
+                bsfxResourceRepository.remove_sfx(self.current_preset.name())
             self.refreshVolumeOfPlayer()
             self.refreshSoundSourceOfPlayer()
             self.__setUIData()
