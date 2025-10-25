@@ -1,6 +1,5 @@
 
 import os
-import sqlite3
 from typing import List
 import json
 import shutil
