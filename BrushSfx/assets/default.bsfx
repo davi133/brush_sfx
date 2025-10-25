@@ -125,3 +125,21 @@ z) Stamp Shoujo Bubbles;;bsfx_spraycan;;1;;bsfx_spraycan;;0.6
 z) Stamp Sparkles;;bsfx_spraycan;;1;;bsfx_eraser;;0.9
 z) Stamp Stylised Tree;;bsfx_pencil;;1;;bsfx_eraser;;1.0
 z) Stamp Vegetal;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+a) Eraser Small;;bsfx_eraser;;1;;bsfx_eraser;;1.0
+b) Basic-1;;bsfx_pen;;1;;bsfx_eraser;;0.5
+b) Basic-2 Opacity;;bsfx_pen;;1;;bsfx_eraser;;0.5
+c) Pencil 2b (mypaint);;bsfx_pencil;;1;;bsfx_eraser;;1.0
+c) Pencil-2;;bsfx_pen;;1;;bsfx_eraser;;1.0
+c) Pencil-1 Hard;;bsfx_pencil;;1;;bsfx_eraser;;0.63
+c) Pencil-5 Tilted;;bsfx_pencil;;1;;bsfx_eraser;;0.78
+d) Ink-3 Gpen;;bsfx_pen;;1;;bsfx_eraser;;0.75
+d) Ink-4 Pen Rough;;bsfx_pen;;1;;bsfx_eraser;;0.75
+d) Ink-7 Brush Rough;;bsfx_paintbrush;;1;;bsfx_eraser;;0.82
+e) Marker Chisel Smooth;;bsfx_pencil;;1;;bsfx_eraser;;0.7
+f) Bristles-3 Large Smooth;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+g) Dry Brushing;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+h) Charcoal Pencil Medium;;bsfx_pencil;;1;;bsfx_eraser;;0.7
+h) Charcoal Pencil Thin;;bsfx_pencil;;1;;bsfx_eraser;;0.69
+j) WaterC Flat Decay Tilt;;bsfx_paintbrush;;1;;bsfx_eraser;;0.73
+k) Blender Basic;;bsfx_pencil;;1;;bsfx_eraser;;0.49
+z) Stamp Water;;bsfx_pencil;;1;;bsfx_eraser;;0.76
