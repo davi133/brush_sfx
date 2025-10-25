@@ -20,11 +20,6 @@ from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener, brush_preset_listener
 
 from .resources import bsfxConfig, bsfxResourceRepository, kraResourceReader, bsfxFile
-
-print("register is ", bsfxFile.get_sfx("kanji brush"))
-bsfxFile.save_sfx("new_brush", bsfxConfig("bsfx_pen", True, "bsfx_airbrush", 1))
-bsfxFile.save_sfx("existing-brush", bsfxConfig("bsfx_sadlkflsadjfldkasd", True, "bsfx_airbrush", 0.01))
-bsfxFile.remove_sfx("love_brush")
  
 class BrushSFXExtension(Extension):
 

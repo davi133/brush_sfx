@@ -66,14 +66,20 @@ class bsfxConfig:
 class BrushSfxResourceFile:
     def __init__(self):
         self.file_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxresources.bsfx')
+        self.default_file_path =f"{dir_path}/assets/default.bsfx"
+        
         file_exists = os.path.isfile(self.file_path)
         self.data = None
         if not file_exists:
-            self.__init_file()
+            self.__load_default()
         
         with open(self.file_path, "r+") as file:
             self.data = file.readlines()
         self.data = [line.strip() for line in self.data]
+
+    def __load_default(self):
+        print("[BrushSfx] Loaded default sfx list")
+        shutil.copy(self.default_file_path, self.file_path)
 
     def __init_file(self):
         with open(self.file_path, "w") as file:
@@ -301,29 +307,4 @@ class BrushSfxResourceRepository:
 
 bsfxResourceRepository = BrushSfxResourceRepository()
 
-def migrate_to_file():
-    use_id = True
-    db_path = f"{dir_path}/assets/default.sqlite"
-    with sqlite3.connect(db_path) as con:
-        cur = con.cursor()
-        cur.execute("SELECT preset_id, preset_filename, sfx_id, use_eraser,eraser_sfx_id, volume FROM rel_preset_sfx")
-        all_configs = cur.fetchall()
-        use_id = all_configs[0][0] <= 1000000
-
-        configs_dict = {(row[0] if use_id else row[1]):bsfxConfig(row[2],row[3],row[4],row[5])for row in all_configs}
-        print(len(configs_dict), "len(configs_dict)")
-        keys = [key for key in configs_dict]
-        print(len(keys), "len(keys)")
-        print("keys", keys)
-        kraResources = kraResourceReader.get_preset_by_key(keys, use_id)
-
-        for key in kraResources:
-            name = kraResources[key]
-            config = configs_dict[key]
-            bsfxFile.save_sfx(name, config)
-
-
-        
-migrate_to_file()
-    #get all brush names
 
