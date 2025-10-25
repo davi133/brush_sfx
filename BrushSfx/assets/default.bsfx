@@ -1,0 +1,145 @@
+v1
+a) Eraser Circle;;bsfx_eraser;;1;;bsfx_eraser;;0.7
+a) Eraser Soft;;bsfx_eraser;;1;;bsfx_eraser;;0.6
+b) Airbrush Soft;;bsfx_airbrush;;1;;bsfx_airbrush;;0.85
+b) Basic-3 Flow;;bsfx_pen;;1;;bsfx_eraser;;0.7
+b) Basic-4 Flow Opacity;;bsfx_pen;;1;;bsfx_eraser;;0.5
+b) Basic-5 Size;;bsfx_paintbrush;;1;;bsfx_eraser;;0.8
+b) Basic-5 Size Opacity;;bsfx_paintbrush;;1;;bsfx_eraser;;0.8
+b) Basic-6 Details;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+c) Pencil 1 Sketch (mypaint);;bsfx_pencil;;1;;bsfx_eraser;;0.65
+c) Pencil-3 Large 4B;;bsfx_pencil;;1;;bsfx_eraser;;0.65
+c) Pencil-4 Soft;;bsfx_pencil;;1;;bsfx_eraser;;0.4
+c) Pencil-6 Quick Shade;;bsfx_pencil;;1;;bsfx_eraser;;0.5
+d) Ink pen (mypaint);;bsfx_pen;;1;;bsfx_eraser;;0.85
+d) Ink-1 Precision;;bsfx_pen;;1;;bsfx_eraser;;1.0
+d) Ink-2 Fineliner;;bsfx_pen;;1;;bsfx_eraser;;0.6
+d) Ink-8 Sumi-e;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+e) Marker Details;;bsfx_pencil;;1;;bsfx_eraser;;0.6
+e) Marker Dry;;bsfx_pencil;;1;;bsfx_eraser;;0.85
+e) Marker Medium (mypaint);;bsfx_pencil;;1;;bsfx_eraser;;0.84
+e) Marker Plain (mypaint);;bsfx_pencil;;1;;bsfx_eraser;;0.75
+f) Bristles-1 Details;;bsfx_paintbrush;;1;;bsfx_eraser;;0.45
+f) Bristles-2 Flat Rough;;bsfx_paintbrush;;1;;bsfx_eraser;;0.75
+f) Bristles-4 Glaze;;bsfx_paintbrush;;1;;bsfx_eraser;;0.55
+f) Bristles-5 Flat;;bsfx_paintbrush;;1;;bsfx_eraser;;0.65
+f) Charcoal Rock Soft;;bsfx_pencil;;1;;bsfx_eraser;;0.7
+f) Dry Roller;;bsfx_pen;;1;;bsfx_eraser;;0.15
+g) Dry Bristles;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+g) Dry Bristles Eroded;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+g) Dry Textured Creases;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+h) Chalk Details;;bsfx_pencil;;1;;bsfx_eraser;;1.0
+h) Chalk Grainy;;bsfx_pencil;;1;;bsfx_eraser;;1.0
+h) Chalk Soft;;bsfx_pencil;;1;;bsfx_eraser;;0.8
+h) Charcoal pencil large;;bsfx_pencil;;1;;bsfx_eraser;;0.46
+i) Wet Bristles;;bsfx_paintbrush;;1;;bsfx_eraser;;0.7
+i) Wet Bristles Rough;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+i) Wet Circle;;bsfx_pen;;1;;bsfx_eraser;;0.1
+i) Wet Knife;;bsfx_pen;;1;;bsfx_eraser;;0.11
+i) Wet Knife Plus (mypaint);;bsfx_pen;;1;;bsfx_eraser;;0.1
+i) Wet Paint;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+i) Wet Paint Details;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+i) Wet Paint Plus (mypaint);;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+i) Wet Smear;;bsfx_paintbrush;;1;;bsfx_eraser;;0.71
+i) Wet Textured Soft;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) WaterC Basic Lines-Dry;;bsfx_paintbrush;;1;;bsfx_eraser;;0.81
+j) WaterC Basic Lines-Wet;;bsfx_paintbrush;;1;;bsfx_eraser;;0.8
+j) WaterC Basic Lines-Wet-Pattern;;bsfx_paintbrush;;1;;bsfx_eraser;;0.85
+j) WaterC Basic Round-Fringe 02;;bsfx_paintbrush;;1;;bsfx_eraser;;0.6
+j) WaterC Basic Round-Grain;;bsfx_paintbrush;;1;;bsfx_eraser;;0.61
+j) WaterC Basic Round-Grunge;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) WaterC Flat Big-Grain Tilt;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) WaterC Special Blobs;;bsfx_airbrush;;1;;bsfx_eraser;;0.86
+j) WaterC Special Splats;;bsfx_pencil;;1;;bsfx_eraser;;1.0
+j) WaterC Spread;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) WaterC Spread WideArea;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) WaterC Spread-Pattern;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) WaterC Water-Pattern;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) Watercolor Fringe;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) Watercolor Texture;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) Waterpaint Hard Edges;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+j) Waterpaint Soft Edges;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+k) Blender Blur;;bsfx_paintbrush;;1;;bsfx_eraser;;0.31
+k) Blender Knife Edge;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+k) Blender Pixelize;;bsfx_eraser;;1;;bsfx_eraser;;0.41
+k) Blender Rake;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+k) Blender Smear;;bsfx_pencil;;1;;bsfx_eraser;;0.5
+k) Blender Textured Soft;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+l) Adjust Color;;bsfx_nosound;;0;;bsfx_nosound;;1.0
+l) Adjust Dodge;;bsfx_nosound;;0;;bsfx_nosound;;1.0
+l) Adjust Lighten;;bsfx_nosound;;0;;bsfx_eraser;;1.0
+l) Adjust Multiply;;bsfx_nosound;;0;;bsfx_eraser;;1.0
+l) Adjust Overlay Burn;;bsfx_nosound;;0;;bsfx_eraser;;1.0
+m) RGBA 01 Thick-dry;;bsfx_paintbrush;;1;;bsfx_paintbrush;;1.0
+m) RGBA 02 Thickpaint;;bsfx_paintbrush;;1;;bsfx_paintbrush;;0.8
+m) RGBA 03 Rake;;bsfx_paintbrush;;1;;bsfx_paintbrush;;1.0
+m) RGBA 04 Impasto;;bsfx_paintbrush;;1;;bsfx_paintbrush;;1.0
+m) RGBA 05 Impasto-details;;bsfx_paintbrush;;1;;bsfx_paintbrush;;1.0
+m) RGBA 06 Rock;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+t) Shapes Fill;;bsfx_pen;;1;;bsfx_pen;;0.8
+t) Shapes Mecha;;bsfx_spraycan;;1;;bsfx_spraycan;;1.0
+t) Shapes Rounded;;bsfx_spraycan;;1;;bsfx_spraycan;;1.0
+t) Shapes Spikes;;bsfx_spraycan;;1;;bsfx_spraycan;;1.0
+t) Shapes Square;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+u) Pixel Art;;bsfx_pen;;1;;bsfx_eraser;;1.0
+u) Pixel Art Dithering;;bsfx_pen;;1;;bsfx_eraser;;0.6
+u) Pixel Art Fill;;bsfx_pen;;1;;bsfx_eraser;;0.8
+v) Clone Tool;;bsfx_spraycan;;1;;bsfx_spraycan;;1.0
+v) Distort Grow;;bsfx_nosound;;1;;bsfx_eraser;;1.0
+v) Distort Move;;bsfx_nosound;;1;;bsfx_eraser;;1.0
+v) Distort Shrink;;bsfx_nosound;;1;;bsfx_eraser;;1.0
+v) Experimental Webs;;bsfx_pen;;1;;bsfx_eraser;;0.41
+v) Sketching-1 Chrome Thin;;bsfx_pen;;1;;bsfx_eraser;;0.41
+v) Sketching-2 Chrome Large;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+v) Sketching-3 Leaky;;bsfx_pen;;1;;bsfx_eraser;;0.7
+v) Texture Impressionism;;bsfx_paintbrush;;1;;bsfx_paintbrush;;1.0
+v) Texture Pointillism;;bsfx_paintbrush;;1;;bsfx_paintbrush;;1.0
+w) Texture Normal Map;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+x) Filter Blur;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+x) Filter Sharpen;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+y) Screentone Moire;;bsfx_pen;;1;;bsfx_eraser;;0.3
+y) Screentone Pressure;;bsfx_pen;;1;;bsfx_eraser;;0.31
+y) Screentones Regular;;bsfx_pen;;1;;bsfx_eraser;;0.3
+y) Texture Big;;bsfx_airbrush;;1;;bsfx_eraser;;1.0
+y) Texture Crackles;;bsfx_spraycan;;1;;bsfx_eraser;;1.0
+y) Texture Hair;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+y) Texture Large Splat;;bsfx_airbrush;;1;;bsfx_airbrush;;1.0
+y) Texture Noise;;bsfx_airbrush;;1;;bsfx_eraser;;1.0
+y) Texture Random Particles;;bsfx_airbrush;;1;;bsfx_eraser;;1.0
+y) Texture Reptile;;bsfx_spraycan;;1;;bsfx_spraycan;;1.0
+y) Texture Snow Pile;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+y) Texture Spines;;bsfx_paintbrush;;1;;bsfx_paintbrush;;1.0
+y) Texture Splat;;bsfx_airbrush;;1;;bsfx_airbrush;;0.7
+y) Texture Spray;;bsfx_airbrush;;1;;bsfx_airbrush;;0.8
+y) Texture Starfield;;bsfx_airbrush;;1;;bsfx_airbrush;;0.4
+y) Texture Wood Fiber;;bsfx_paintbrush;;1;;bsfx_paintbrush;;1.0
+z) Stamp Bokeh;;bsfx_spraycan;;1;;bsfx_spraycan;;0.49
+z) Stamp Floor;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+z) Stamp Grass;;bsfx_pencil;;1;;bsfx_eraser;;1.0
+z) Stamp Grass Patch;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+z) Stamp Hearts;;bsfx_spraycan;;1;;bsfx_spraycan;;0.7
+z) Stamp Herbals;;bsfx_spraycan;;1;;bsfx_eraser;;1.0
+z) Stamp Leaves;;bsfx_pencil;;1;;bsfx_eraser;;1.0
+z) Stamp Mountains Distant;;bsfx_pencil;;1;;bsfx_eraser;;0.76
+z) Stamp Shoujo Bubbles;;bsfx_spraycan;;1;;bsfx_spraycan;;0.6
+z) Stamp Sparkles;;bsfx_spraycan;;1;;bsfx_eraser;;0.9
+z) Stamp Stylised Tree;;bsfx_pencil;;1;;bsfx_eraser;;1.0
+z) Stamp Vegetal;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+a) Eraser Small;;bsfx_eraser;;1;;bsfx_eraser;;1.0
+b) Basic-1;;bsfx_pen;;1;;bsfx_eraser;;0.5
+b) Basic-2 Opacity;;bsfx_pen;;1;;bsfx_eraser;;0.5
+c) Pencil 2b (mypaint);;bsfx_pencil;;1;;bsfx_eraser;;1.0
+c) Pencil-2;;bsfx_pen;;1;;bsfx_eraser;;1.0
+c) Pencil-1 Hard;;bsfx_pencil;;1;;bsfx_eraser;;0.63
+c) Pencil-5 Tilted;;bsfx_pencil;;1;;bsfx_eraser;;0.78
+d) Ink-3 Gpen;;bsfx_pen;;1;;bsfx_eraser;;0.75
+d) Ink-4 Pen Rough;;bsfx_pen;;1;;bsfx_eraser;;0.75
+d) Ink-7 Brush Rough;;bsfx_paintbrush;;1;;bsfx_eraser;;0.82
+e) Marker Chisel Smooth;;bsfx_pencil;;1;;bsfx_eraser;;0.7
+f) Bristles-3 Large Smooth;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+g) Dry Brushing;;bsfx_paintbrush;;1;;bsfx_eraser;;1.0
+h) Charcoal Pencil Medium;;bsfx_pencil;;1;;bsfx_eraser;;0.7
+h) Charcoal Pencil Thin;;bsfx_pencil;;1;;bsfx_eraser;;0.69
+j) WaterC Flat Decay Tilt;;bsfx_paintbrush;;1;;bsfx_eraser;;0.73
+k) Blender Basic;;bsfx_pencil;;1;;bsfx_eraser;;0.49
+z) Stamp Water;;bsfx_pencil;;1;;bsfx_eraser;;0.76
