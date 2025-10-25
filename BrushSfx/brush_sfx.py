@@ -19,7 +19,8 @@ SilenceSfx, EraserSfx, PencilSFXSource, PenSFXSource, PaintBrushSfx ,AirbrushSfx
 from .filter import LowPassFilter, apply_filter, PeakFilter
 from .input import InputListener, input_listener, brush_preset_listener
 
-from .resources import bsfxConfig, bsfxResourceRepository, kraResourceReader, bsfxFile
+from .resources import bsfxConfig, bsfxFile
+
  
 class BrushSFXExtension(Extension):
 
@@ -50,7 +51,7 @@ class BrushSFXExtension(Extension):
         
         #preset settings
         self.current_preset = None
-        self.current_preset_id = 0
+        self.current_preset_name = 0
         self.is_preset_using_sfx = False
         self.preset_sfx_config: bsfxConfig = bsfxConfig("", True, "", 1.0)
         
@@ -86,7 +87,6 @@ class BrushSFXExtension(Extension):
             "sound_sorce_cache": None,
             "remain_cached": remain_cached
         }
-        bsfxResourceRepository.add_sfx(sfx_id, name)
         self.__sound_options += [new_sound_option]                                                                                
 
 
@@ -177,8 +177,8 @@ class BrushSFXExtension(Extension):
     def __changePresetConfig(self, sfx_config):
         
         self.preset_sfx_config = copy.deepcopy(sfx_config)
-        if self.current_preset is not None: 
-            bsfxResourceRepository.link_preset_sfx(self.current_preset_id, self.preset_sfx_config, self.current_preset.filename())
+        if self.current_preset is not None:
+            bsfxFile.save_sfx(self.current_preset.name(), self.preset_sfx_config)
         self.refreshSoundSourceOfPlayer()
         self.refreshVolumeOfPlayer()
 
@@ -253,11 +253,9 @@ class BrushSFXExtension(Extension):
         self.current_preset_group.setEnabled(True)
         
         self.current_preset = preset
-        self.current_preset_id = kraResourceReader.get_preset_id_by_filename(preset.filename())
+        self.current_preset_name =  preset.name()
         
-        preset_sfx = bsfxResourceRepository.get_preset_sfx(self.current_preset_id)
-        if BAKING_DEFAULTS_MODE:
-            preset_sfx = bsfxResourceRepository.get_preset_sfx_by_filename(self.current_preset.filename())
+        preset_sfx = bsfxFile.get_sfx(preset.name())
         if preset_sfx is not None:
             self.preset_sfx_config = preset_sfx["sfx_config"]
             self.is_preset_using_sfx = True
@@ -280,15 +278,15 @@ class BrushSFXExtension(Extension):
         if on:
             self.preset_sfx_config = copy.deepcopy(self.general_sfx_config)
             self.preset_sfx_config.volume = 1.0
-            bsfxResourceRepository.link_preset_sfx(self.current_preset_id, self.preset_sfx_config, self.current_preset.filename())
+            if self.current_preset is not None:
+                bsfxFile.save_sfx(self.current_preset.name(), self.preset_sfx_config)
             
             self.is_preset_using_sfx = True
             self.__setUIData()
         else:
             self.is_preset_using_sfx = False
-            bsfxResourceRepository.unlink_preset_sfx(self.current_preset_id)
-            if BAKING_DEFAULTS_MODE:
-                bsfxResourceRepository.unlink_preset_sfx_by_filename(self.current_preset.filename())
+            if self.current_preset is not None:
+                bsfxFile.remove_sfx(self.current_preset.name())
             self.refreshVolumeOfPlayer()
             self.refreshSoundSourceOfPlayer()
             self.__setUIData()
