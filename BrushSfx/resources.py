@@ -7,7 +7,7 @@ import shutil
 
 from PyQt5.Qt import *
 
-from .constants import plugin_version, db_version, dir_path, BAKING_DEFAULTS_MODE
+from .constants import plugin_version, db_version, dir_path, BAKING_DEFAULTS_MODE,config_version
 
 class KritaResourceReader:
     def __init__(self):
@@ -28,6 +28,22 @@ class KritaResourceReader:
         self.cur.execute(sql, filename_list)
         presets =  {preset[1]: preset[0] for preset in self.cur.fetchall()}
         return presets
+
+    def get_preset_by_key(self, key_list, use_id = True)-> dict:
+        #sql="select * from sqlitetable where rowid in ({seq})".format(seq=','.join(['?']*len(args))
+
+        sql ="SELECT id, name, filename FROM resources WHERE " 
+        if use_id:
+            sql+= "id IN ({seq})".format(seq=','.join(['?']*len(key_list)))
+        else:
+            sql+= "filename IN ({seq})".format(seq=','.join(['?']*len(key_list)))
+        self.cur.execute(sql, key_list)
+        rows = self.cur.fetchall()
+        if use_id:
+            presets =  {preset[0]: preset[1] for preset in rows}
+        else:
+            presets =  {preset[2]: preset[1] for preset in rows}
+        return presets
     
     def __del__(self):
         self.con.close()
@@ -44,23 +60,89 @@ class bsfxConfig:
     def __str__(self):
         return f"{self.sfx_id}, {self.use_eraser}, {self.eraser_sfx_id}, {self.volume}"
 
+    def __repr__(self):
+        return f"{self.sfx_id}, {self.use_eraser}, {self.eraser_sfx_id}, {self.volume}"
 
 class BrushSfxResourceFile:
     def __init__(self):
         self.file_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation), 'brushsfxresources.bsfx')
-        file_exists = os.path.isfile(self.db_path)
-        self.file = open(self.file_path, "wt")
+        file_exists = os.path.isfile(self.file_path)
+        self.data = None
+        if not file_exists:
+            self.__init_file()
+        
+        with open(self.file_path, "r+") as file:
+            self.data = file.readlines()
+        self.data = [line.strip() for line in self.data]
+
+    def __init_file(self):
+        with open(self.file_path, "w") as file:
+            file.writelines([config_version])
+
+    def __save_all_data(self):
+        string_data = "\n".join(self.data)
+        with open(self.file_path, "w+") as file:
+            file.write(string_data)
 
     def save_sfx(self, preset_name: str, sfx_config: bsfxConfig):
-        pass
+        new_config =f"{preset_name.strip()};;"
+        new_config+=f"{sfx_config.sfx_id};;"
+        new_config+=f"{('1' if sfx_config.use_eraser else '0')};;"
+        new_config+=f"{sfx_config.eraser_sfx_id};;"
+        new_config+=f"{float(sfx_config.volume)}"
+
+        i = 0
+        config_index = -1
+        for line in self.data[1:]:
+            i+=1 #first line is version anyway
+            config = line.split(";;")
+            if config[0].strip() == preset_name.strip():
+                config_index = i
+                break
+        
+        if config_index != -1:
+            self.data[config_index] = new_config 
+        else:
+            self.data+=[new_config]
+        self.__save_all_data()
+
+
     
     def get_sfx(self, preset_name: str):
-        pass
+        for line in self.data[1:]:
+            config = line.split(";;")
+            if config[0].strip() == preset_name.strip():
+                volume_string = config[4].strip()
+                try:
+                    volume =float(volume_string)
+                except ValueError:
+                    volume=1.0
+                preset_sfx =  {
+                "name": config[0],
+                "sfx_config": bsfxConfig(
+                    config[1],
+                    config[2].strip() != "0",
+                    config[3],
+                    volume
+                )}
+                return preset_sfx
+        return None
 
     def remove_sfx(self, preset_name: str):
-        pass
+        i = 0
+        config_index = -1
+        for line in self.data[1:]:
+            i+=1 #first line is version anyway
+            config = line.split(";;")
+            if config[0].strip() == preset_name.strip():
+                config_index = i
+                break
+        if config_index != -1:
+            self.data.pop(config_index)
 
+        self.__save_all_data()
 
+bsfxFile = BrushSfxResourceFile()
 
 
 
@@ -218,4 +300,30 @@ class BrushSfxResourceRepository:
         self.con.close()
 
 bsfxResourceRepository = BrushSfxResourceRepository()
-bsfxResourceFile = BrushSfxResourceFile()
+
+def migrate_to_file():
+    use_id = True
+    db_path = f"{dir_path}/assets/default.sqlite"
+    with sqlite3.connect(db_path) as con:
+        cur = con.cursor()
+        cur.execute("SELECT preset_id, preset_filename, sfx_id, use_eraser,eraser_sfx_id, volume FROM rel_preset_sfx")
+        all_configs = cur.fetchall()
+        use_id = all_configs[0][0] <= 1000000
+
+        configs_dict = {(row[0] if use_id else row[1]):bsfxConfig(row[2],row[3],row[4],row[5])for row in all_configs}
+        print(len(configs_dict), "len(configs_dict)")
+        keys = [key for key in configs_dict]
+        print(len(keys), "len(keys)")
+        print("keys", keys)
+        kraResources = kraResourceReader.get_preset_by_key(keys, use_id)
+
+        for key in kraResources:
+            name = kraResources[key]
+            config = configs_dict[key]
+            bsfxFile.save_sfx(name, config)
+
+
+        
+migrate_to_file()
+    #get all brush names
+
