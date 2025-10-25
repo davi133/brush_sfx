@@ -28,6 +28,7 @@ The `Master Volume` option controls the global volume of the sound effects. The 
 and `Sound for eraser` and `Eraser sound` options control the sound effects that will play
 when using your brush on canvas. The `Use different sound on current preset` lets you assing
 a different configuration to your current brush preset.
+Preset configurations are linked to the brush's name
 
 ## Sound Effects
 
