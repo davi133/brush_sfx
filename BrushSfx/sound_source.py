@@ -8,7 +8,7 @@ import wave
 
 import numpy as np
 
-from .utils import lerp, clamp, Vector2
+from .utils import lerp, clamp, Vector2, smooth_lerp
 from .constants import dir_path, BLOCKSIZE
 from .filter import apply_filter, PeakFilter
 from .input import input_listener
@@ -158,12 +158,12 @@ class PenSFXSource(SFXSource):
     def __generate_pen_noise(self, duration, frequency):
         samples = np.random.rand(int(duration * frequency))
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.968), #reduce everything a lot
-            PeakFilter(-300, 570, 980, 2800, 12),#gain on lowers
-            PeakFilter(000, 100, 100, 150, 1),  # peak at 100 > 1
-            PeakFilter(70, 360, 360, 460, 1.5),  # peak at 300
+            PeakFilter(-100, 0, 25000, 38000, -0.960),
+            PeakFilter(-300, 570, 980, 2800, 12),
+            PeakFilter(000, 100, 100, 150, 1),
+            PeakFilter(70, 360, 360, 460, 1.5),
             PeakFilter(2500, 3000, 3010, 3500, 0.6), 
-            PeakFilter(8000, 8300, 15000, 18000, -0.9),  # reduce more
+            PeakFilter(8000, 8300, 15000, 18000, -0.9),
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/frequency)
         samples = apply_filter(samples, frequency, frequencies_cache=ft_freq, filters=filters)
@@ -183,7 +183,7 @@ class PencilSFXSource(SFXSource):
         super().__init__()
 
         self.base_sound_data = generate_from_file(f"{dir_path}/assets/29a-pencil.wav")
-        self.base_sound_data.samples *= 2.0
+        self.base_sound_data.samples *= 9.2
         self.max_speed = 15
 
         self._set_samplerate(self.base_sound_data.samplerate)
@@ -202,6 +202,7 @@ class PencilSFXSource(SFXSource):
         filters =[
             PeakFilter(200,400,1000,1700,2.5 * clamp((2*pressure-1), 0, 1))
         ]
+        speed = math.log(speed+1, 10) * (10/3)
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
         self._mix_samples(self.__samples_as_last_callback, filtered_samples)
@@ -220,6 +221,7 @@ class PaintBrushSfx(SFXSource):
     def __init__(self):
         super().__init__()
         self.base_sound_data = self.__generate_paintbrush_noise()
+        self.max_speed = 9
 
         self.__frames_processed = 0
         self.__last_callback_time = 0
@@ -232,9 +234,12 @@ class PaintBrushSfx(SFXSource):
         all_samples = self.__get_samples_from_base()
 
         speed =  self._getSpeed(deltaTime, cursor_movement)
-        speed = speed **2
-        pressure = pressure **2
-        filters =[]
+        pressure = smooth_lerp(pressure, 0.0,1.0)
+        speed_shift = 500*(speed ** 1.2)
+        filters =[
+            PeakFilter(300+speed_shift, 800+speed_shift, 900+speed_shift, 1200+speed_shift, 0.9),
+        ]
+        speed = speed **1.75
         all_samples *= speed *  lerp(pressure, 0.1, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
         self._mix_samples(self.__samples_as_last_callback, filtered_samples)
@@ -246,8 +251,8 @@ class PaintBrushSfx(SFXSource):
     def __generate_paintbrush_noise(self):
         samples = np.random.rand(self.get_samplerate())
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.83),
-            PeakFilter(-100, 0, 1200, 3800, 0.5),
+            PeakFilter(-100, 0, 25000, 38000, -0.5),
+            PeakFilter(-100, 0, 1200, 3800, 0.2),
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/self.get_samplerate())
         samples = apply_filter(samples, self.get_samplerate(), frequencies_cache=ft_freq, filters=filters)
@@ -297,7 +302,7 @@ class AirbrushSfx(SFXSource):
     def __generate_airbrush_noise(self):
         samples = np.random.rand(self.get_samplerate())
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.94),
+            PeakFilter(-100, 0, 25000, 38000, -0.62),
             PeakFilter(7000,11990,12010,17000, 4),
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/self.get_samplerate())
@@ -370,7 +375,7 @@ class SpraycanSfx(SFXSource):
     def __generate_spray_noise(self):
         samples = np.random.rand(self.get_samplerate())
         filters = [
-            PeakFilter(-100, 0, 25000, 38000, -0.94),
+            PeakFilter(-100, 0, 25000, 38000, -0.68),
             PeakFilter(3250,11990,12010,20750, 4),
         ]
         ft_freq = np.fft.fftfreq(samples.size, d=1/self.get_samplerate())
