@@ -45,7 +45,7 @@ class SFXSource:
         self.__zero_to_one = np.linspace(start=0,stop=1, num=BLOCKSIZE)
         self.__zero_to_one = self.__zero_to_one * self.__zero_to_one * (3.0 -2.0 * self.__zero_to_one)
 
-        self.max_speed = 12 # in screens per second
+        self.max_speed = 6 # in screens per second
         self._window_height_px = QGuiApplication.instance().primaryScreen().size().height()
         
 
@@ -83,7 +83,7 @@ class EraserSfx(SFXSource):
         super().__init__()
 
         self.base_sound_data = self.__generate_eraser_noise()
-        self.max_speed=8
+        self.max_speed=4
         self.__frames_processed = 0
         self.__last_callback_time = 0
         self.__samples_as_last_callback = np.zeros(BLOCKSIZE)
@@ -147,6 +147,7 @@ class PenSFXSource(SFXSource):
             PeakFilter(650+shift_by_speed, 700+shift_by_speed, 720+shift_by_speed, 1320+shift_by_speed, 5), 
             #No, its not the same as using one PeakFilter with a bigger value
         ]
+        speed = math.log(9*speed + 1, 10)
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
         self._mix_samples(self.__samples_as_last_callback, filtered_samples)
@@ -183,8 +184,8 @@ class PencilSFXSource(SFXSource):
         super().__init__()
 
         self.base_sound_data = generate_from_file(f"{dir_path}/assets/29a-pencil.wav")
-        self.base_sound_data.samples *= 9.2
-        self.max_speed = 15
+        self.base_sound_data.samples *= 20
+        self.max_speed = 7.0
 
         self._set_samplerate(self.base_sound_data.samplerate)
 
@@ -202,13 +203,18 @@ class PencilSFXSource(SFXSource):
         filters =[
             PeakFilter(200,400,1000,1700,2.5 * clamp((2*pressure-1), 0, 1))
         ]
-        speed = math.log(speed+1, 10) * (10/3)
+        speed = math.log(9*speed + 1, 10)
         all_samples *= speed *  lerp(pressure, 0.3, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
         self._mix_samples(self.__samples_as_last_callback, filtered_samples)
 
         self.__samples_as_last_callback = filtered_samples[BLOCKSIZE:]
         self.__last_callback_time = cffi_time.currentTime
+
+        max_sample = max(filtered_samples[:BLOCKSIZE].max(), abs(filtered_samples[:BLOCKSIZE].min()))
+        if pressure >0:
+            print(speed, max_sample)
+
         return filtered_samples[:BLOCKSIZE]
 
     def __get_samples_from_base(self):
@@ -221,7 +227,7 @@ class PaintBrushSfx(SFXSource):
     def __init__(self):
         super().__init__()
         self.base_sound_data = self.__generate_paintbrush_noise()
-        self.max_speed = 9
+        self.max_speed = 8
 
         self.__frames_processed = 0
         self.__last_callback_time = 0
@@ -240,6 +246,7 @@ class PaintBrushSfx(SFXSource):
             PeakFilter(300+speed_shift, 800+speed_shift, 900+speed_shift, 1200+speed_shift, 0.9),
         ]
         speed = speed **1.75
+        speed = math.log(9*speed + 1, 10)
         all_samples *= speed *  lerp(pressure, 0.1, 1.0)
         filtered_samples = apply_filter(all_samples, self.get_samplerate(), self.__frequencies_cache, filters)
         self._mix_samples(self.__samples_as_last_callback, filtered_samples)
