@@ -13,7 +13,7 @@ import sounddevice as sd
 
 from .utils import clamp, lerp
 from .sound import sound_player
-from .constants import DEFAULT_VOLUME, DEFAULT_SFX_ID, DEFAULT_USE_ERASER, DEFAULT_ERASER_SFX_ID
+from .constants import DEFAULT_VOLUME, DEFAULT_SFX_ID, DEFAULT_USE_ERASER, DEFAULT_ERASER_SFX_ID, plugin_version
 from .sound_source import WavObject, generate_from_file, SFXSource, \
 SilenceSfx, EraserSfx, PencilSFXSource, PenSFXSource, PaintBrushSfx ,AirbrushSfx, SpraycanSfx
 from .filter import LowPassFilter, apply_filter, PeakFilter
@@ -92,7 +92,7 @@ class BrushSFXExtension(Extension):
 
     def __createDialog(self):
         self.dialogWidget.setWindowFlag(Qt.WindowStaysOnTopHint)
-        self.dialogWidget.setWindowTitle("Brush SFX")
+        self.dialogWidget.setWindowTitle(f"Brush SFX v{plugin_version}")
         self.dialogWidget.setMinimumWidth(350)
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(15, 20, 15, 20)
