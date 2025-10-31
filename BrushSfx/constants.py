@@ -1,6 +1,6 @@
 import os
 
-plugin_version = "1.1.0"
+plugin_version = "1.1.2"
 config_version = "v1"
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

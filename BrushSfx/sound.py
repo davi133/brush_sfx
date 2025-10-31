@@ -66,13 +66,8 @@ class SoundPlayer(QObject):
             samples = np.zeros(BLOCKSIZE)
 
         exponential_volume = (math.pow(10, 3/10*self.__volume) - 1.0)
-        output = samples[:] * exponential_volume * self.__is_using_valid_tool
-        max_sample = max(output.max(), abs(output.min()))
-        if self.input_data.pressure >0:
-            print(max_sample," stream ---------------------------------------")
+        outdata[:, 0] = samples[:] * exponential_volume * self.__is_using_valid_tool
 
-
-        outdata[:, 0] = output
 
     def setSoundSource(self, sound_source):
         previous_samplerate = self.__brush_sfx_source.get_samplerate()
