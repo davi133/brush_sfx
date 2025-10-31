@@ -13,6 +13,7 @@ assing one for each of your brushes. This plugin comes with sounds pre-assigned 
 
 ### Linux
 You will also need to install the portaudio library
+Doesn't work if you installed your krita via flatpak
 
 ### On Ubuntu
 `sudo apt install portaudio19-dev`
