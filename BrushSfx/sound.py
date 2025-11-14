@@ -1,5 +1,6 @@
-
-from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QPushButton
+from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent
+from PyQt5.QtGui import QCursor, QGuiApplication, QIcon
 
 import wave
 import random
@@ -115,3 +116,31 @@ class SoundPlayer(QObject):
         self.play_stream.stop()
 
 sound_player = SoundPlayer(input_listener)
+
+
+class DeviceSelector(QWidget):
+    deviceChanged = pyqtSignal(str)
+
+    def __init__(self, value: float, parent):
+        super().__init__(parent)
+        self.setLayout(QVBoxLayout())
+        self.layout().setContentsMargins(0, 0, 0, 0)
+
+
+        device_label = QLabel("Output Device", self)
+        device_label.setFixedWidth(100)
+
+        self.device_options = QComboBox(self)
+        self.device_options.addItems(["device A", "device B"])
+        self.device_options.setFixedWidth(250)
+
+        self.refresh_button = QPushButton("Refresh Device List",self)
+        self.refresh_button.setFixedWidth(150)
+
+        line_layout = QHBoxLayout()
+        line_layout.addWidget(device_label)
+        line_layout.addWidget(self.device_options)
+
+        # layout
+        self.layout().addLayout(line_layout)
+        self.layout().addWidget(self.refresh_button)

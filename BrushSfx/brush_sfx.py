@@ -12,7 +12,7 @@ import numpy as np
 import sounddevice as sd
 
 from .utils import clamp, lerp
-from .sound import sound_player
+from .sound import sound_player, DeviceSelector
 from .constants import DEFAULT_VOLUME, DEFAULT_SFX_ID, DEFAULT_USE_ERASER, DEFAULT_ERASER_SFX_ID, plugin_version
 from .sound_source import WavObject, generate_from_file, SFXSource, \
 SilenceSfx, EraserSfx, PencilSFXSource, PenSFXSource, PaintBrushSfx ,AirbrushSfx, SpraycanSfx
@@ -100,6 +100,9 @@ class BrushSFXExtension(Extension):
         # CheckBox general feature
         self.SFX_checkbox = QCheckBox("Sound Effects", self.dialogWidget)
         self.SFX_checkbox.stateChanged.connect(self.switchOnOff)
+
+        #Device Selector
+        self.device_selector = DeviceSelector(1,self.dialogWidget)
         
         # GENERAL =====================================================================================================================================
         # Volume slider
@@ -115,10 +118,15 @@ class BrushSFXExtension(Extension):
         volume_layout.addWidget(self.volume_slider)
         volume_layout.addStretch()
 
+        
         self.general_config_widget = BSfxConfigWidget(self.dialogWidget)
         self.general_config_widget.setShowVolume(False)
         self.general_config_widget.setFixedWidth(320)
         self.general_config_widget.sfxConfigChanged.connect(self.__changeGeneralConfig)
+        
+        self.general_config_group = QGroupBox("General Sound Effect", self.dialogWidget)
+        self.general_config_group.setLayout(QVBoxLayout())
+        self.general_config_group.layout().addWidget(self.general_config_widget)
 
         # BRUSH PRESET =====================================================================================================================================
         self.current_preset_group = QGroupBox("Use different sound on current preset", self.dialogWidget)
@@ -141,8 +149,9 @@ class BrushSFXExtension(Extension):
         # =====================================================================================================================================
         self.dialogWidget.setLayout(main_layout)
         self.dialogWidget.layout().addWidget(self.SFX_checkbox)
+        self.dialogWidget.layout().addWidget(self.device_selector)
         self.dialogWidget.layout().addLayout(volume_layout)
-        self.dialogWidget.layout().addWidget(self.general_config_widget)
+        self.dialogWidget.layout().addWidget(self.general_config_group)
         self.dialogWidget.layout().addWidget(self.current_preset_group)
 
     
