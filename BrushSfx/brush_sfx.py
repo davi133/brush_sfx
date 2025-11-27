@@ -102,7 +102,7 @@ class BrushSFXExtension(Extension):
         self.SFX_checkbox.stateChanged.connect(self.switchOnOff)
 
         #Device Selector
-        self.device_selector = DeviceSelector(1,self.dialogWidget)
+        self.device_selector = DeviceSelector(self.player,self.dialogWidget)
         
         # GENERAL =====================================================================================================================================
         # Volume slider
