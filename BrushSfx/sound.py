@@ -23,7 +23,8 @@ class SoundPlayer(QObject):
         self.__use_eraser_sfx = False
         self.__eraser_sfx_source = EraserSfx()
         self.__is_playing = False
-        self.__is_using_valid_tool = 0
+        self.__is_using_valid_tool = 1
+        self.__using_tool_detection = True
         self.__is_using_eraser = 0
         self.input_data: InputListener = input_data
         
@@ -66,7 +67,8 @@ class SoundPlayer(QObject):
             samples = np.zeros(BLOCKSIZE)
 
         exponential_volume = (math.pow(10, 3/10*self.__volume) - 1.0)
-        outdata[:, 0] = samples[:] * exponential_volume * self.__is_using_valid_tool
+        is_valid_tool = self.__is_using_valid_tool if self.__using_tool_detection else 1
+        outdata[:, 0] = samples[:] * exponential_volume * is_valid_tool
 
 
     def setSoundSource(self, sound_source):
@@ -80,6 +82,9 @@ class SoundPlayer(QObject):
 
     def setEraserSoundSource(self, sound_source):
         self.__eraser_sfx_source = sound_source
+
+    def setUseToolDetection(self, use_detection):
+        self.__using_tool_detection = use_detection
 
     def __recreateStream(self):
         was_playing = self.__is_playing

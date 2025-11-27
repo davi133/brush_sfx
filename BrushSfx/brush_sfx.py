@@ -45,6 +45,7 @@ class BrushSFXExtension(Extension):
         self.sfx_config_in_use:bsfxConfig = bsfxConfig("", True, "",1.0)
         
         #general settings
+        self.__using_tool_detection = True
         self.is_sfx_on = False
         self.general_sfx_config: bsfxConfig = bsfxConfig("", True, "", 0.5)
         
@@ -100,6 +101,13 @@ class BrushSFXExtension(Extension):
         # CheckBox general feature
         self.SFX_checkbox = QCheckBox("Sound Effects", self.dialogWidget)
         self.SFX_checkbox.stateChanged.connect(self.switchOnOff)
+
+        self.tool_detection_checkbox = QCheckBox("UI based tool detection", self.dialogWidget)
+        self.tool_detection_checkbox.stateChanged.connect(self.__switchToolDetection)
+        self.tool_detection_checkbox.setToolTip("""Tool detection based on UI
+    Disable this if you are using a plugin that changes krita's UI too much because it may break detection.\n
+    Sound effects will not play if using a tool that shouldn't make sound (i.e select tool, transform tool, etc).\n
+    Doesn't affect brush preset detection""")
         
         # GENERAL =====================================================================================================================================
         # Volume slider
@@ -141,6 +149,7 @@ class BrushSFXExtension(Extension):
         # =====================================================================================================================================
         self.dialogWidget.setLayout(main_layout)
         self.dialogWidget.layout().addWidget(self.SFX_checkbox)
+        self.dialogWidget.layout().addWidget(self.tool_detection_checkbox)
         self.dialogWidget.layout().addLayout(volume_layout)
         self.dialogWidget.layout().addWidget(self.general_config_widget)
         self.dialogWidget.layout().addWidget(self.current_preset_group)
@@ -159,6 +168,16 @@ class BrushSFXExtension(Extension):
             self.player.stopPlaying()
             self.input_listener.stopListening()
     
+    def __switchToolDetection(self, state):
+        if state == Qt.Checked or state == True:
+            Krita.instance().writeSetting("BrushSfx", "tool_detection", "True")
+            self.__using_tool_detection = True
+            
+        else:
+            Krita.instance().writeSetting("BrushSfx", "tool_detection", "False")
+            self.__using_tool_detection = False
+        
+        self.player.setUseToolDetection(self.__using_tool_detection)
 
     ## Object __________________________________________________________________________________
     def __changeGeneralConfig(self, sfx_config):
@@ -294,6 +313,9 @@ class BrushSFXExtension(Extension):
         __sfx_on_setting = Krita.instance().readSetting("BrushSfx", "brush_sfx_on", "True")
         self.is_sfx_on = __sfx_on_setting != "False"
 
+        __tool_detection_setting = Krita.instance().readSetting("BrushSfx", "tool_detection", "True")
+        self.__using_tool_detection = __tool_detection_setting != "False"
+
         __volume_setting = Krita.instance().readSetting("BrushSfx", "volume",  str(DEFAULT_VOLUME))
         if __volume_setting.isdigit():
             __volume_setting = clamp(int(__volume_setting), 0, 100)
@@ -317,6 +339,7 @@ class BrushSFXExtension(Extension):
         self.volume_slider.blockSignals(False)
 
         self.SFX_checkbox.setChecked(Qt.Checked if self.is_sfx_on else Qt.Unchecked)
+        self.tool_detection_checkbox.setChecked(Qt.Checked if self.__using_tool_detection else Qt.Unchecked)
         self.general_config_widget.blockSignals(True)
         self.general_config_widget.setOptionsData(self.__sound_options)
         self.general_config_widget.setSfxConfig(self.general_sfx_config)
