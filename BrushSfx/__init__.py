@@ -6,8 +6,13 @@ from .dependencies import *
 print("[BrushSfx] Checking for dependencies")
 pipInstallPath()
 enable_pip()
+
+numpy_version = "2.2.6"
+if sys.version_info[1] >= 12:
+    numpy_version = "2.4.0"
+
 checkPipLib([
-                {"numpy": "2.2.6"},
+                {"numpy": numpy_version},
                 {"sounddevice": "0.5.2"}
             ])
 
