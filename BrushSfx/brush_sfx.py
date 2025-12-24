@@ -46,6 +46,7 @@ class BrushSFXExtension(Extension):
         
         #general settings
         self.__using_tool_detection = True
+        self.__constrain_to_canvas = True
         self.is_sfx_on = False
         self.general_sfx_config: bsfxConfig = bsfxConfig("", True, "", 0.5)
         
@@ -108,6 +109,13 @@ class BrushSFXExtension(Extension):
     Disable this if you are using a plugin that changes krita's UI too much because it may break detection.\n
     Sound effects will not play if using a tool that shouldn't make sound (i.e select tool, transform tool, etc).\n
     Doesn't affect brush preset detection""")
+
+        self.constrain_to_canvas_checkbox = QCheckBox("Constrain to canvas", self.dialogWidget)
+        self.constrain_to_canvas_checkbox.stateChanged.connect(self.__switchConstrainToCanvas)
+        self.constrain_to_canvas_checkbox.setToolTip("""Constrain to canvas
+    Sound effects will only play when cursor is over canvas.\n
+    Only works if using Canvas Graphics Acceleration, which is located in:
+    [Menu bar] > settings > Configure Krita... > Display """)
         
         # GENERAL =====================================================================================================================================
         # Volume slider
@@ -150,6 +158,7 @@ class BrushSFXExtension(Extension):
         self.dialogWidget.setLayout(main_layout)
         self.dialogWidget.layout().addWidget(self.SFX_checkbox)
         self.dialogWidget.layout().addWidget(self.tool_detection_checkbox)
+        self.dialogWidget.layout().addWidget(self.constrain_to_canvas_checkbox)
         self.dialogWidget.layout().addLayout(volume_layout)
         self.dialogWidget.layout().addWidget(self.general_config_widget)
         self.dialogWidget.layout().addWidget(self.current_preset_group)
@@ -178,6 +187,17 @@ class BrushSFXExtension(Extension):
             self.__using_tool_detection = False
         
         self.player.setUseToolDetection(self.__using_tool_detection)
+
+    def __switchConstrainToCanvas(self, state):
+        if state == Qt.Checked or state == True:
+            Krita.instance().writeSetting("BrushSfx", "constrain_to_canvas", "True")
+            self.__constrain_to_canvas = True
+            
+        else:
+            Krita.instance().writeSetting("BrushSfx", "constrain_to_canvas", "False")
+            self.__constrain_to_canvas = False
+        
+        self.input_listener.setConstrainToCanvas(self.__constrain_to_canvas)
 
     ## Object __________________________________________________________________________________
     def __changeGeneralConfig(self, sfx_config):
@@ -315,6 +335,11 @@ class BrushSFXExtension(Extension):
 
         __tool_detection_setting = Krita.instance().readSetting("BrushSfx", "tool_detection", "True")
         self.__using_tool_detection = __tool_detection_setting != "False"
+        self.player.setUseToolDetection(self.__using_tool_detection)
+        
+        __constrain_to_canvas = Krita.instance().readSetting("BrushSfx", "constrain_to_canvas", "True")
+        self.__constrain_to_canvas = __constrain_to_canvas != "False"
+        self.input_listener.setConstrainToCanvas(self.__constrain_to_canvas)
 
         __volume_setting = Krita.instance().readSetting("BrushSfx", "volume",  str(DEFAULT_VOLUME))
         if __volume_setting.isdigit():
@@ -340,6 +365,7 @@ class BrushSFXExtension(Extension):
 
         self.SFX_checkbox.setChecked(Qt.Checked if self.is_sfx_on else Qt.Unchecked)
         self.tool_detection_checkbox.setChecked(Qt.Checked if self.__using_tool_detection else Qt.Unchecked)
+        self.constrain_to_canvas_checkbox.setChecked(Qt.Checked if self.__constrain_to_canvas else Qt.Unchecked)
         self.general_config_widget.blockSignals(True)
         self.general_config_widget.setOptionsData(self.__sound_options)
         self.general_config_widget.setSfxConfig(self.general_sfx_config)

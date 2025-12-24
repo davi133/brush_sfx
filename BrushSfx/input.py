@@ -11,6 +11,7 @@ class InputListener(QObject):
     def __init__(self):
         super().__init__()
         
+        self.__constrain_to_canvas = True
         self.__is_listening = False
 
         self.__is_pressing = False
@@ -87,6 +88,9 @@ class InputListener(QObject):
             self.__is_listening = False
             QApplication.instance().removeEventFilter(self)
 
+    def setConstrainToCanvas(self, is_using):
+        self.__constrain_to_canvas = is_using
+
     def canvasInputDetectionBruteForce(self, event):
         input_sum = 0
         current_window = Krita.instance().activeWindow()
@@ -121,8 +125,9 @@ class InputListener(QObject):
             if event.type() == QEvent.KeyRelease:
                 if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
                     self.__modifiers[event.key()] = False
+            return super().eventFilter(obj, event)
         
-        if obj.__class__ != QOpenGLWidget:
+        if obj.__class__ != QOpenGLWidget and self.__constrain_to_canvas:
             return super().eventFilter(obj, event)
 
         if event.type() == QEvent.WindowDeactivate:
@@ -132,7 +137,7 @@ class InputListener(QObject):
         #Canvas enter/leave
         if event.type() == QEvent.Enter:
             self.__is_over_canvas = True
-        if event.type() == QEvent.Leave:
+        if event.type() == QEvent.Leave and not self.__constrain_to_canvas:
             self.__is_over_canvas = False
 
         
