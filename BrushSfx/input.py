@@ -125,9 +125,10 @@ class InputListener(QObject):
             if event.type() == QEvent.KeyRelease:
                 if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
                     self.__modifiers[event.key()] = False
-            return super().eventFilter(obj, event)
         
         if obj.__class__ != QOpenGLWidget and self.__constrain_to_canvas:
+            return super().eventFilter(obj, event)
+        if obj.__class__ != QWindow and not self.__constrain_to_canvas:
             return super().eventFilter(obj, event)
 
         if event.type() == QEvent.WindowDeactivate:
