@@ -19,6 +19,9 @@ Doesn't work if you installed your krita via flatpak
 `sudo apt install portaudio19-dev`
 
 ### On Arch
+Install dependencie to run plugins in krita: <br>
+`sudo pacman -S python-pyqt5` <br><br>
+Install dependencie to make specifically this plugin work: <br>
 `sudo pacman -S portaudio`
 
 ## Configuration
