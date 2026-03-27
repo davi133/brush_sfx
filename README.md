@@ -24,6 +24,14 @@ Install dependencie to run plugins in krita: <br>
 Install dependencie to make specifically this plugin work: <br>
 `sudo pacman -S portaudio`
 
+## Updating to Krita 5.3
+
+Delete the `pykrita/piplib` folder on the krita's resources folder and then restart krita
+If you don't know how to finde the folder:
+1. In your krita's menu bar go to `Settings>Manage Resources...`
+2. Click the button [Open Resource Folder] at the botton
+3. Locate the `pykrita` folder
+
 ## Configuration
 
 On krita's menu bar go to `Tools > Scripts > Brush SFX` or press `F8`.
