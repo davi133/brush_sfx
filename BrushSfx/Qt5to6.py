@@ -58,6 +58,4 @@ else:
     Qt_QOpenGLWidget = QOpenGLWidget
 
     Q5t6_QCheckBox = QCheckBox
-    Q5t6_QCheckBox.checkStateChanged = QCheckBox.stageChanged
-
-
+    Q5t6_QCheckBox.checkStateChanged = QCheckBox.stateChanged
