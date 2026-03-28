@@ -1,6 +1,6 @@
 
 from krita import *
-from .Qt5to6 import Qt_QOpenGLWidget, Qt_Enum
+from .Qt5to6 import Qt_QOpenGLWidget
 
 from .Qt.QtWidgets import QApplication
 from .Qt import QtCompat
@@ -29,10 +29,10 @@ class InputListener(QObject):
         
         
         self.__modifiers = {
-            Qt_Enum.Key.Key_Shift: False,
-            Qt_Enum.Key.Key_Space: False,
-            Qt_Enum.Key.Key_Control: False,
-            Qt_Enum.Key.Key_Alt: False
+            Qt.Key.Key_Shift: False,
+            Qt.Key.Key_Space: False,
+            Qt.Key.Key_Control: False,
+            Qt.Key.Key_Alt: False
         }
 
         #brute force canvas input detection
@@ -123,8 +123,8 @@ class InputListener(QObject):
         if obj.__class__ == QWindow:
             #Modifier detection
             if event.type() == QEvent.Type.KeyPress:
-                            if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
-                                self.__modifiers[event.key()] = True
+                if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
+                    self.__modifiers[event.key()] = True
             if event.type() == QEvent.Type.KeyRelease:
                 if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
                     self.__modifiers[event.key()] = False
@@ -168,7 +168,7 @@ class InputListener(QObject):
         #pressing
         if (event.type() == QEvent.Type.TabletPress or \
             event.type() == QEvent.Type.MouseButtonPress) and \
-            event.button()== Qt_Enum.MouseButton.LeftButton and \
+            event.button()== Qt.MouseButton.LeftButton and \
             not self.is_pressing_modifier:
             self.canvasClicked.emit()
             self.__is_pressing = True
@@ -180,7 +180,7 @@ class InputListener(QObject):
         #releasing
         if (event.type() == QEvent.Type.TabletRelease or \
             event.type() == QEvent.Type.MouseButtonRelease) and \
-            event.button()== Qt_Enum.MouseButton.LeftButton:
+            event.button()== Qt.MouseButton.LeftButton:
             self.__pressure = 0.0
             self.__is_pressing = False
 

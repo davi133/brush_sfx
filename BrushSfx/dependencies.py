@@ -1,7 +1,6 @@
 # https://krita-artists.org/t/use-of-external-pip-libraries-in-python-plugins/21739
 
 from .Qt.QtCore import QStandardPaths
-from .Qt5to6 import QStandardPaths_Enum
 
 import sys
 import os
@@ -21,7 +20,7 @@ def pipInstallPath():
     - create directory if not exist
     - add it to sys.path
     """
-    returned=os.path.join(QStandardPaths.writableLocation(QStandardPaths_Enum.StandardLocation.AppDataLocation), 'pykrita', 'piplib')
+    returned=os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation), 'pykrita', 'piplib')
     
     if not os.path.isdir(returned):
         os.makedirs(returned)
