@@ -1,7 +1,7 @@
 from krita import *
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QComboBox, QLabel, QDialog, QSlider
-from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent, QTimer, QPoint, QThread
-from PyQt5.QtGui import QCursor, QGuiApplication
+from .Qt.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QComboBox, QLabel, QDialog, QSlider
+from .Qt.QtCore import Qt, Signal, QObject, QEvent, QTimer, QPoint, QThread
+from .Qt.QtGui import QCursor, QGuiApplication
 
 import time
 import math

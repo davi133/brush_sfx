@@ -4,7 +4,7 @@ from typing import List
 import json
 import shutil
 
-from PyQt5.Qt import *
+from .Qt.QtCore import QStandardPaths
 
 from .constants import dir_path, config_version
 

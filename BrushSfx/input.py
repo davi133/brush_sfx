@@ -1,12 +1,18 @@
 
 from krita import *
-from PyQt5.QtWidgets import QApplication, QOpenGLWidget
-from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer, pyqtSignal
-from PyQt5.QtGui import QWindow
+try:
+    from PyQt5.QtWidgets import QOpenGLWidget
+except:
+    from PyQt6.QtOpenGLWidgets import QOpenGLWidget #Qt lib misses this one
+
+from .Qt.QtWidgets import QApplication
+from .Qt import QtCompat
+from .Qt.QtCore import Qt, QObject, QEvent, QPoint, QTimer, Signal
+from .Qt.QtGui import QWindow
 import time
 
 class InputListener(QObject):
-    canvasClicked = pyqtSignal()
+    canvasClicked = Signal()
 
     def __init__(self):
         super().__init__()

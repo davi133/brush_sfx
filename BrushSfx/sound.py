@@ -1,5 +1,5 @@
 
-from PyQt5.QtCore import QObject
+from .Qt.QtCore import QObject
 
 import wave
 import random

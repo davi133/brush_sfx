@@ -29,16 +29,16 @@
 
 from krita import *
 
-from PyQt5.QtWidgets import (
+from .Qt.QtWidgets import (
         QWidget,
         QToolButton,
         QDockWidget
     )
 
-from PyQt5.QtCore import (
+from .Qt.QtCore import (
         QObject,
         QSignalMapper,
-        pyqtSignal as Signal
+        Signal
     )
 
 

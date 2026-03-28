@@ -1,6 +1,7 @@
 # https://krita-artists.org/t/use-of-external-pip-libraries-in-python-plugins/21739
 
-from PyQt5.Qt import *
+from .Qt.QtCore import QStandardPaths
+
 
 import sys
 import os
