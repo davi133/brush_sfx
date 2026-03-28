@@ -1,9 +1,6 @@
 
 from krita import *
-try:
-    from PyQt5.QtWidgets import QOpenGLWidget
-except:
-    from PyQt6.QtOpenGLWidgets import QOpenGLWidget #Qt lib misses this one
+from .Qt5to6 import Qt_QOpenGLWidget, Qt_Enum
 
 from .Qt.QtWidgets import QApplication
 from .Qt import QtCompat
@@ -32,10 +29,10 @@ class InputListener(QObject):
         
         
         self.__modifiers = {
-            Qt.Key.Key_Shift: False,
-            Qt.Key.Key_Space: False,
-            Qt.Key.Key_Control: False,
-            Qt.Key.Key_Alt: False
+            Qt_Enum.Key.Key_Shift: False,
+            Qt_Enum.Key.Key_Space: False,
+            Qt_Enum.Key.Key_Control: False,
+            Qt_Enum.Key.Key_Alt: False
         }
 
         #brute force canvas input detection
@@ -132,7 +129,7 @@ class InputListener(QObject):
                 if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
                     self.__modifiers[event.key()] = False
         
-        if obj.__class__ != QOpenGLWidget and self.__constrain_to_canvas:
+        if obj.__class__ != Qt_QOpenGLWidget and self.__constrain_to_canvas:
             return super().eventFilter(obj, event)
         if obj.__class__ != QWindow and not self.__constrain_to_canvas:
             return super().eventFilter(obj, event)
@@ -171,7 +168,7 @@ class InputListener(QObject):
         #pressing
         if (event.type() == QEvent.Type.TabletPress or \
             event.type() == QEvent.Type.MouseButtonPress) and \
-            event.button()== Qt.MouseButton.LeftButton and \
+            event.button()== Qt_Enum.MouseButton.LeftButton and \
             not self.is_pressing_modifier:
             self.canvasClicked.emit()
             self.__is_pressing = True
@@ -183,7 +180,7 @@ class InputListener(QObject):
         #releasing
         if (event.type() == QEvent.Type.TabletRelease or \
             event.type() == QEvent.Type.MouseButtonRelease) and \
-            event.button()== Qt.MouseButton.LeftButton:
+            event.button()== Qt_Enum.MouseButton.LeftButton:
             self.__pressure = 0.0
             self.__is_pressing = False
 
@@ -192,8 +189,8 @@ class InputListener(QObject):
 input_listener = InputListener()
 
 class BrushPresetListener(QObject):
-    currentPresetChanged = pyqtSignal(Resource)
-    eraserModeChanged = pyqtSignal(bool)
+    currentPresetChanged = Signal(Resource)
+    eraserModeChanged = Signal(bool)
 
     def __init__(self):
         super().__init__()

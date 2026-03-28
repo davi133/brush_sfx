@@ -5,6 +5,7 @@ import json
 import shutil
 
 from .Qt.QtCore import QStandardPaths
+from .Qt5to6 import QStandardPaths_Enum
 
 from .constants import dir_path, config_version
 
@@ -23,7 +24,7 @@ class bsfxConfig:
 
 class BrushSfxResourceRepository:
     def __init__(self):
-        self.file_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation), 'brushsfxresources.bsfx')
+        self.file_path = os.path.join(QStandardPaths.writableLocation(QStandardPaths_Enum.StandardLocation.AppDataLocation), 'brushsfxresources.bsfx')
         self.default_file_path =f"{dir_path}/assets/default.bsfx"
         
         file_exists = os.path.isfile(self.file_path)

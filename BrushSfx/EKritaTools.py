@@ -41,7 +41,7 @@ from .Qt.QtCore import (
         Signal
     )
 
-
+from .Qt5to6 import major_ver
 
 # -----------------------------------------------------------------------------
 
@@ -324,7 +324,10 @@ class EKritaTools:
 
                 EKritaTools.__toolbox = Krita.instance().activeWindow().qwindow().findChild(QDockWidget, 'ToolBox')
 
-                EKritaTools.__signalMapper.mappedString.connect(__toolChanged)
+                if major_ver >= 6:
+                    EKritaTools.__signalMapper.mappedString.connect(__toolChanged)
+                else:
+                    EKritaTools.__signalMapper.mapped[str].connect(__toolChanged)
 
                 for id in list(EKritaTools.__TOOLS.keys()):
                     toolButton = EKritaTools.__toolbox.findChild(QToolButton, id)
