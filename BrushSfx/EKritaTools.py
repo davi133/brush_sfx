@@ -324,7 +324,7 @@ class EKritaTools:
 
                 EKritaTools.__toolbox = Krita.instance().activeWindow().qwindow().findChild(QDockWidget, 'ToolBox')
 
-                EKritaTools.__signalMapper.mapped[str].connect(__toolChanged)
+                EKritaTools.__signalMapper.mappedString.connect(__toolChanged)
 
                 for id in list(EKritaTools.__TOOLS.keys()):
                     toolButton = EKritaTools.__toolbox.findChild(QToolButton, id)
