@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from PyQt5.QtCore import QPoint
+from .Qt.QtCore import QPoint
 
 
 class Vector2:

@@ -1,7 +1,8 @@
 from krita import *
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QComboBox, QLabel, QDialog, QSlider
-from PyQt5.QtCore import Qt, pyqtSignal, QObject, QEvent, QTimer, QPoint, QThread
-from PyQt5.QtGui import QCursor, QGuiApplication
+from .Qt.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QLabel, QDialog, QSlider, QCheckBox
+from .Qt.QtCore import Qt, Signal, QObject, QEvent, QTimer, QPoint, QThread
+from .Qt.QtGui import QCursor, QGuiApplication
+from .Qt5to6 import *
 
 import time
 import math
@@ -93,7 +94,7 @@ class BrushSFXExtension(Extension):
 
 
     def __createDialog(self):
-        self.dialogWidget.setWindowFlag(Qt.WindowStaysOnTopHint)
+        self.dialogWidget.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.dialogWidget.setWindowTitle(f"Brush SFX v{plugin_version}")
         self.dialogWidget.setMinimumWidth(350)
         main_layout = QVBoxLayout()
@@ -101,17 +102,17 @@ class BrushSFXExtension(Extension):
 
         # CheckBox general feature
         self.SFX_checkbox = QCheckBox("Sound Effects", self.dialogWidget)
-        self.SFX_checkbox.stateChanged.connect(self.switchOnOff)
+        self.SFX_checkbox.checkStateChanged.connect(self.switchOnOff)
 
         self.tool_detection_checkbox = QCheckBox("UI based tool detection", self.dialogWidget)
-        self.tool_detection_checkbox.stateChanged.connect(self.__switchToolDetection)
+        self.tool_detection_checkbox.checkStateChanged.connect(self.__switchToolDetection)
         self.tool_detection_checkbox.setToolTip("""Tool detection based on UI
     Disable this if you are using a plugin that changes krita's UI too much because it may break detection.\n
     Sound effects will not play if using a tool that shouldn't make sound (i.e select tool, transform tool, etc).\n
     Doesn't affect brush preset detection""")
 
         self.constrain_to_canvas_checkbox = QCheckBox("Constrain to canvas", self.dialogWidget)
-        self.constrain_to_canvas_checkbox.stateChanged.connect(self.__switchConstrainToCanvas)
+        self.constrain_to_canvas_checkbox.checkStateChanged.connect(self.__switchConstrainToCanvas)
         self.constrain_to_canvas_checkbox.setToolTip("""Constrain to canvas
     Sound effects will only play when cursor is over canvas.\n
     Only works if using Canvas Graphics Acceleration, which is located in:
@@ -166,7 +167,7 @@ class BrushSFXExtension(Extension):
     
     ## Enable and Disable Feature ______________________________________________________________
     def switchOnOff(self, state):
-        if state == Qt.Checked or state == True:
+        if state == Qt.CheckState.Checked or state == True:
             Krita.instance().writeSetting("BrushSfx", "brush_sfx_on", "True")
             self.is_sfx_on = True
             self.player.startPlaying()
@@ -178,7 +179,7 @@ class BrushSFXExtension(Extension):
             self.input_listener.stopListening()
     
     def __switchToolDetection(self, state):
-        if state == Qt.Checked or state == True:
+        if state == Qt.CheckState.Checked or state == True:
             Krita.instance().writeSetting("BrushSfx", "tool_detection", "True")
             self.__using_tool_detection = True
             
@@ -189,7 +190,7 @@ class BrushSFXExtension(Extension):
         self.player.setUseToolDetection(self.__using_tool_detection)
 
     def __switchConstrainToCanvas(self, state):
-        if state == Qt.Checked or state == True:
+        if state == Qt.CheckState.Checked or state == True:
             Krita.instance().writeSetting("BrushSfx", "constrain_to_canvas", "True")
             self.__constrain_to_canvas = True
             
@@ -363,9 +364,9 @@ class BrushSFXExtension(Extension):
         self.volume_slider.setVolume(self.general_sfx_config.volume)
         self.volume_slider.blockSignals(False)
 
-        self.SFX_checkbox.setChecked(Qt.Checked if self.is_sfx_on else Qt.Unchecked)
-        self.tool_detection_checkbox.setChecked(Qt.Checked if self.__using_tool_detection else Qt.Unchecked)
-        self.constrain_to_canvas_checkbox.setChecked(Qt.Checked if self.__constrain_to_canvas else Qt.Unchecked)
+        self.SFX_checkbox.setCheckState(Qt.CheckState.Checked if self.is_sfx_on else Qt.CheckState.Unchecked)
+        self.tool_detection_checkbox.setCheckState(Qt.CheckState.Checked if self.__using_tool_detection else QtQt.CheckState.Unchecked)
+        self.constrain_to_canvas_checkbox.setCheckState(Qt.CheckState.Checked if self.__constrain_to_canvas else Qt.CheckState.Unchecked)
         self.general_config_widget.blockSignals(True)
         self.general_config_widget.setOptionsData(self.__sound_options)
         self.general_config_widget.setSfxConfig(self.general_sfx_config)
@@ -387,8 +388,8 @@ class BrushSFXExtension(Extension):
         self.dialogWidget.show()     
 
 class VolumeSlider(QWidget):
-    volumeChanged = pyqtSignal(float)
-    volumeSliderReleased = pyqtSignal(float)
+    volumeChanged = Signal(float)
+    volumeSliderReleased = Signal(float)
 
     def __init__(self, value: float, parent):
         super().__init__(parent)
@@ -396,7 +397,7 @@ class VolumeSlider(QWidget):
 
         self.volume_slider = QSlider(self)
         self.volume_slider.setTracking(False)
-        self.volume_slider.setOrientation(Qt.Horizontal)
+        self.volume_slider.setOrientation(Qt.Orientation.Horizontal)
         self.volume_slider.setMinimum(0)
         self.volume_slider.setMaximum(100)
         self.volume_slider.setTickInterval(10)
@@ -411,8 +412,8 @@ class VolumeSlider(QWidget):
         volume_slider_layout = QHBoxLayout()
         volume_slider_layout.setContentsMargins(0, 0, 0, 0)
         volume_slider_layout.addStretch()
-        volume_slider_layout.addWidget(self.volume_slider, alignment =Qt.AlignLeft)
-        volume_slider_layout.addWidget(self.volume_value_label, alignment =Qt.AlignLeft)
+        volume_slider_layout.addWidget(self.volume_slider, alignment =Qt.AlignmentFlag.AlignLeft)
+        volume_slider_layout.addWidget(self.volume_value_label, alignment =Qt.AlignmentFlag.AlignLeft)
         
 
         self.setLayout(volume_slider_layout)
@@ -448,11 +449,11 @@ class VolumeSlider(QWidget):
 
 
 class BSfxConfigWidget(QWidget):
-    sfxConfigChanged = pyqtSignal(bsfxConfig)
+    sfxConfigChanged = Signal(bsfxConfig)
 
     #deprecate
-    volumeChanged = pyqtSignal(float)
-    soundOptionChanged = pyqtSignal(str)
+    volumeChanged = Signal(float)
+    soundOptionChanged = Signal(str)
     
     def __init__(self, parent):
         super().__init__(parent)
@@ -490,7 +491,7 @@ class BSfxConfigWidget(QWidget):
 
         #Eraser option
         self.use_eraser_checkbox = QCheckBox("Sound for eraser", self)
-        self.use_eraser_checkbox.stateChanged.connect(self.__use_eraser_checked)
+        self.use_eraser_checkbox.checkStateChanged.connect(self.__use_eraser_checked)
 
         # Eraser Sound
             # label
@@ -523,9 +524,9 @@ class BSfxConfigWidget(QWidget):
         self.sfxConfigChanged.emit(self.__sfx_config)
 
     def __use_eraser_checked(self, state):
-        self.__sfx_config.use_eraser = state == Qt.Checked
-        self.eraser_label.setEnabled(state == Qt.Checked)
-        self.eraser_sound_cb.setEnabled(state == Qt.Checked)
+        self.__sfx_config.use_eraser = state == Qt.CheckState.Checked
+        self.eraser_label.setEnabled(state == Qt.CheckState.Checked)
+        self.eraser_sound_cb.setEnabled(state == Qt.CheckState.Checked)
         self.sfxConfigChanged.emit(self.__sfx_config)
 
     def __eraser_sound_changed(self, new_index):
@@ -572,7 +573,7 @@ class BSfxConfigWidget(QWidget):
         self.brush_sound_cb.setCurrentIndex(brush_index)
         self.eraser_sound_cb.setCurrentIndex(eraser_index)
         
-        self.use_eraser_checkbox.setChecked(Qt.Checked if self.__sfx_config.use_eraser else Qt.Unchecked)
+        self.use_eraser_checkbox.setCheckState(Qt.CheckState.Checked if self.__sfx_config.use_eraser else Qt.CheckState.Unchecked)
         self.eraser_label.setEnabled(self.__sfx_config.use_eraser)
         self.eraser_sound_cb.setEnabled(self.__sfx_config.use_eraser)
         

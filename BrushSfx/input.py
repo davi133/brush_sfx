@@ -1,12 +1,15 @@
 
 from krita import *
-from PyQt5.QtWidgets import QApplication, QOpenGLWidget
-from PyQt5.QtCore import Qt, QObject, QEvent, QPoint, QTimer, pyqtSignal
-from PyQt5.QtGui import QWindow
+from .Qt5to6 import Qt_QOpenGLWidget
+
+from .Qt.QtWidgets import QApplication
+from .Qt import QtCompat
+from .Qt.QtCore import Qt, QObject, QEvent, QPoint, QTimer, Signal
+from .Qt.QtGui import QWindow
 import time
 
 class InputListener(QObject):
-    canvasClicked = pyqtSignal()
+    canvasClicked = Signal()
 
     def __init__(self):
         super().__init__()
@@ -26,10 +29,10 @@ class InputListener(QObject):
         
         
         self.__modifiers = {
-            Qt.Key_Shift: False,
-            Qt.Key_Space: False,
-            Qt.Key_Control: False,
-            Qt.Key_Alt: False
+            Qt.Key.Key_Shift: False,
+            Qt.Key.Key_Space: False,
+            Qt.Key.Key_Control: False,
+            Qt.Key.Key_Alt: False
         }
 
         #brute force canvas input detection
@@ -119,26 +122,26 @@ class InputListener(QObject):
     def eventFilter(self, obj, event):
         if obj.__class__ == QWindow:
             #Modifier detection
-            if event.type() == QEvent.KeyPress:
+            if event.type() == QEvent.Type.KeyPress:
                 if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
                     self.__modifiers[event.key()] = True
-            if event.type() == QEvent.KeyRelease:
+            if event.type() == QEvent.Type.KeyRelease:
                 if not event.isAutoRepeat() and event.key() in [key for key in self.__modifiers]:
                     self.__modifiers[event.key()] = False
         
-        if obj.__class__ != QOpenGLWidget and self.__constrain_to_canvas:
+        if obj.__class__ != Qt_QOpenGLWidget and self.__constrain_to_canvas:
             return super().eventFilter(obj, event)
         if obj.__class__ != QWindow and not self.__constrain_to_canvas:
             return super().eventFilter(obj, event)
 
-        if event.type() == QEvent.WindowDeactivate:
+        if event.type() == QEvent.Type.WindowDeactivate:
             for key in self.__modifiers:
                 self.__modifiers[key] = False
 
         #Canvas enter/leave
-        if event.type() == QEvent.Enter:
+        if event.type() == QEvent.Type.Enter:
             self.__is_over_canvas = True
-        if event.type() == QEvent.Leave and not self.__constrain_to_canvas:
+        if event.type() == QEvent.Type.Leave and not self.__constrain_to_canvas:
             self.__is_over_canvas = False
 
         
@@ -147,37 +150,37 @@ class InputListener(QObject):
 
         if (self.__is_pressing):
             #position
-            if (event.type() == QEvent.TabletMove or \
-                event.type() == QEvent.MouseMove):
+            if (event.type() == QEvent.Type.TabletMove or \
+                event.type() == QEvent.Type.MouseMove):
                 self.__cursor_potition = event.pos()
                     
             #pressure
-            if (event.type() == QEvent.TabletMove):
+            if (event.type() == QEvent.Type.TabletMove):
                 self.__pressure = event.pressure()
                 self.__last_tablet_input_time = time.time()
                 self.__is_tablet_input = True
 
-            if (event.type() == QEvent.MouseMove and time.time() >= self.__last_tablet_input_time + 0.1):
+            if (event.type() == QEvent.Type.MouseMove and time.time() >= self.__last_tablet_input_time + 0.1):
                 self.__pressure = 1.0
                 self.__is_tablet_input = False
 
         
         #pressing
-        if (event.type() == QEvent.TabletPress or \
-            event.type() == QEvent.MouseButtonPress) and \
-            event.button()== Qt.LeftButton and \
+        if (event.type() == QEvent.Type.TabletPress or \
+            event.type() == QEvent.Type.MouseButtonPress) and \
+            event.button()== Qt.MouseButton.LeftButton and \
             not self.is_pressing_modifier:
             self.canvasClicked.emit()
             self.__is_pressing = True
             self.__cursor_potition = event.pos()
             self.__last_cursor_position_read = event.pos()
-            if event.type() == QEvent.MouseButtonPress:
+            if event.type() == QEvent.Type.MouseButtonPress:
                 self.__pressure = 1.0
 
         #releasing
-        if (event.type() == QEvent.TabletRelease or \
-            event.type() == QEvent.MouseButtonRelease) and \
-            event.button()== Qt.LeftButton:
+        if (event.type() == QEvent.Type.TabletRelease or \
+            event.type() == QEvent.Type.MouseButtonRelease) and \
+            event.button()== Qt.MouseButton.LeftButton:
             self.__pressure = 0.0
             self.__is_pressing = False
 
@@ -186,8 +189,8 @@ class InputListener(QObject):
 input_listener = InputListener()
 
 class BrushPresetListener(QObject):
-    currentPresetChanged = pyqtSignal(Resource)
-    eraserModeChanged = pyqtSignal(bool)
+    currentPresetChanged = Signal(Resource)
+    eraserModeChanged = Signal(bool)
 
     def __init__(self):
         super().__init__()

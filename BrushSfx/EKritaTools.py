@@ -29,18 +29,17 @@
 
 from krita import *
 
-from PyQt5.QtWidgets import (
+from .Qt.QtWidgets import (
         QWidget,
         QToolButton,
         QDockWidget
     )
 
-from PyQt5.QtCore import (
+from .Qt.QtCore import (
         QObject,
         QSignalMapper,
-        pyqtSignal as Signal
+        Signal
     )
-
 
 
 # -----------------------------------------------------------------------------
@@ -324,7 +323,7 @@ class EKritaTools:
 
                 EKritaTools.__toolbox = Krita.instance().activeWindow().qwindow().findChild(QDockWidget, 'ToolBox')
 
-                EKritaTools.__signalMapper.mapped[str].connect(__toolChanged)
+                EKritaTools.__signalMapper.mappedString.connect(__toolChanged)
 
                 for id in list(EKritaTools.__TOOLS.keys()):
                     toolButton = EKritaTools.__toolbox.findChild(QToolButton, id)

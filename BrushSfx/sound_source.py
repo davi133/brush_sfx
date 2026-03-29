@@ -1,7 +1,7 @@
 
 
-from PyQt5.QtCore import QPoint
-from PyQt5.QtGui import QGuiApplication, QCursor
+from .Qt.QtCore import QPoint
+from .Qt.QtGui import QGuiApplication, QCursor
 
 import math
 import wave
