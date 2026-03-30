@@ -365,7 +365,7 @@ class BrushSFXExtension(Extension):
         self.volume_slider.blockSignals(False)
 
         self.SFX_checkbox.setCheckState(Qt.CheckState.Checked if self.is_sfx_on else Qt.CheckState.Unchecked)
-        self.tool_detection_checkbox.setCheckState(Qt.CheckState.Checked if self.__using_tool_detection else QtQt.CheckState.Unchecked)
+        self.tool_detection_checkbox.setCheckState(Qt.CheckState.Checked if self.__using_tool_detection else Qt.CheckState.Unchecked)
         self.constrain_to_canvas_checkbox.setCheckState(Qt.CheckState.Checked if self.__constrain_to_canvas else Qt.CheckState.Unchecked)
         self.general_config_widget.blockSignals(True)
         self.general_config_widget.setOptionsData(self.__sound_options)
