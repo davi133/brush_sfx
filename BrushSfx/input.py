@@ -1,6 +1,6 @@
 
 from krita import *
-from .Qt5to6 import Qt_QOpenGLWidget
+from .Qt5to6 import Qt_QOpenGLWidget, getEventPosition
 
 from .Qt.QtWidgets import QApplication
 from .Qt import QtCompat
@@ -152,7 +152,7 @@ class InputListener(QObject):
             #position
             if (event.type() == QEvent.Type.TabletMove or \
                 event.type() == QEvent.Type.MouseMove):
-                self.__cursor_potition = event.pos()
+                self.__cursor_potition = getEventPosition(event)
                     
             #pressure
             if (event.type() == QEvent.Type.TabletMove):
@@ -172,8 +172,8 @@ class InputListener(QObject):
             not self.is_pressing_modifier:
             self.canvasClicked.emit()
             self.__is_pressing = True
-            self.__cursor_potition = event.pos()
-            self.__last_cursor_position_read = event.pos()
+            self.__cursor_potition = getEventPosition(event)
+            self.__last_cursor_position_read = getEventPosition(event)
             if event.type() == QEvent.Type.MouseButtonPress:
                 self.__pressure = 1.0
 

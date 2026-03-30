@@ -24,7 +24,7 @@ from .resources import bsfxConfig, bsfxResourceRepository
  
 class BrushSFXExtension(Extension):
 
-    soundChanged = pyqtSignal(SFXSource)
+    soundChanged = Signal(SFXSource)
 
     def __init__(self, parent):
         super().__init__(parent)

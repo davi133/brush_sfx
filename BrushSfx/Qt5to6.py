@@ -15,3 +15,10 @@ else:
     from PyQt5.QtWidgets import QOpenGLWidget
     Qt_QOpenGLWidget = QOpenGLWidget
     QCheckBox.checkStateChanged = QCheckBox.stateChanged
+
+
+def getEventPosition(event):
+    if major_ver >= 6:
+        return event.position().toPoint()
+    else:
+        return event.pos()
