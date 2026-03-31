@@ -26,7 +26,7 @@ Install dependencie to make specifically this plugin work: <br>
 
 ## Updating to Krita 5.3/6.0
 Update plugin to version 1.1.9 or above (check tags on github)\
-Delete the `pykrita/piplib` folder on the krita's resources folder and then restart krita\
+Delete the `(...)/krita/pykrita/piplib` folder on the krita's resources folder and then restart krita\
 If you don't know how to finde the folder:
 1. In your krita's menu bar go to `Settings>Manage Resources...`
 2. Click the button [Open Resource Folder] at the botton
