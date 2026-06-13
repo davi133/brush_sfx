@@ -1,6 +1,14 @@
 import sys
 import os
 os.environ["SD_ENABLE_ASIO"] = "1"
+
+try:
+    from krita import Krita
+    major = int(Krita.instance().version().split('.')[0])
+    if major >= 6: os.environ["QT_PREFERRED_BINDING"] = "PyQt6"
+except Exception:
+    pass
+
 from .dependencies import *
 
 print("[BrushSfx] Checking for dependencies")
