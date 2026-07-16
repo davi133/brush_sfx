@@ -30,7 +30,7 @@ Delete the `(...)/krita/pykrita/piplib` folder on the krita's resources folder a
 If you don't know how to finde the folder:
 1. In your krita's menu bar go to `Settings>Manage Resources...`
 2. Click the button [Open Resource Folder] at the botton
-3. Locate the `pykrita` folder
+3. Locate the `pykrita/piplib` folder
 
 ## Configuration
 
